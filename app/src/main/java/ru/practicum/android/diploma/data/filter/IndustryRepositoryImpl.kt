@@ -13,8 +13,8 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
         return try {
             val response = networkClient.doRequest(IndustryRequest())
             when (response.resultCode) {
-                NetworkCodes.NOT_FOUND_CODE -> {
-                    IndustrySearchResult(null, IndustrySearchError.NotFound)
+                NetworkCodes.SERVER_ERROR_CODE -> {
+                    IndustrySearchResult(null, IndustrySearchError.Server)
                 }
 
                 NetworkCodes.SUCCESS_CODE -> {
@@ -28,7 +28,7 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
                 }
             }
         } catch (_: Exception) {
-            IndustrySearchResult(null, IndustrySearchError.Server)
+            IndustrySearchResult(null, IndustrySearchError.Network)
         }
     }
 }
