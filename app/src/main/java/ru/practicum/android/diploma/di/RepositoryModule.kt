@@ -2,10 +2,12 @@ package ru.practicum.android.diploma.di
 
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
+import ru.practicum.android.diploma.data.filter.IndustryRepositoryImpl
 import ru.practicum.android.diploma.data.search.SearchVacanciesRepositoryImpl
 import ru.practicum.android.diploma.data.vacancy.FavoritesRepositoryImpl
 import ru.practicum.android.diploma.data.vacancy.VacancyDetailsRepositoryImpl
 import ru.practicum.android.diploma.domain.api.FavoritesRepository
+import ru.practicum.android.diploma.domain.api.IndustryRepository
 import ru.practicum.android.diploma.domain.api.SearchVacanciesRepository
 import ru.practicum.android.diploma.domain.api.VacancyDetailsRepository
 
@@ -18,5 +20,8 @@ val repositoryModule = module {
     }
     factory<FavoritesRepository> {
         FavoritesRepositoryImpl(get())
+    }
+    single<IndustryRepository> {
+        IndustryRepositoryImpl(get())
     }
 }

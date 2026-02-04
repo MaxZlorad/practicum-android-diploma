@@ -1,3 +1,5 @@
 package ru.practicum.android.diploma.data.dto
 
-data class IndustryResponse(val industries: List<IndustryDto>) : Response()
+import ru.practicum.android.diploma.domain.models.Industry
+
+data class IndustryResponse(val industries: List<Industry>) : Response()
