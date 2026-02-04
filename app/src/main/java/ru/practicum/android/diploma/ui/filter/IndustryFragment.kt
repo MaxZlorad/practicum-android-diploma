@@ -44,7 +44,6 @@ class IndustryFragment : Fragment() {
     }
 
     private fun observeState() {
-
         viewModel.observeState().observe(viewLifecycleOwner) { state ->
             when (state) {
                 is IndustryState.Empty -> {
@@ -86,7 +85,6 @@ class IndustryFragment : Fragment() {
             }
         }
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()
