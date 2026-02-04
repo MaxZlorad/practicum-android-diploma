@@ -39,6 +39,10 @@ class FilterFragment : Fragment() {
         binding.includeToolbar.btnBack.setOnClickListener {
             findNavController().popBackStack()
         }
+
+        binding.industryUnselected.setOnClickListener {
+            findNavController().navigate(R.id.action_filterFragment_to_industryFragment)
+        }
     }
 
     override fun onDestroyView() {

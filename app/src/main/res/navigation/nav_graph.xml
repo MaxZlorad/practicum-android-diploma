@@ -33,6 +33,9 @@
             app:destination="@id/searchFragment"
             app:popUpTo="@id/searchFragment"
             app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/action_filterFragment_to_industryFragment"
+            app:destination="@id/industryFragment" />
     </fragment>
 
     <!-- Экран вакансии (детали одной вакансии)-->
@@ -65,5 +68,9 @@
         android:name="ru.practicum.android.diploma.ui.team.TeamFragment"
         android:label="@string/team"
         tools:layout="@layout/fragment_team" />
+    <fragment
+        android:id="@+id/industryFragment"
+        android:name="ru.practicum.android.diploma.ui.filter.IndustryFragment"
+        android:label="IndustryFragment" />
 
 </navigation>
