@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.practicum.android.diploma.databinding.ItemIndustryBinding
 import ru.practicum.android.diploma.domain.models.Industry
 
-class IndustryAdapter(private var industries: List<Industry>, private var selectedIndustryId: String? = null) :
+class IndustryAdapter(private var industries: List<Industry>, private var selectedIndustryId: Int? = null) :
     RecyclerView.Adapter<IndustryViewHolder>() {
     var onIndustriesClickListener: ((Industry) -> Unit)? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndustryViewHolder {
@@ -34,7 +34,7 @@ class IndustryAdapter(private var industries: List<Industry>, private var select
         }
     }
 
-    fun updateIndustries(newIndustries: List<Industry>, selectedId: String?) {
+    fun updateIndustries(newIndustries: List<Industry>, selectedId: Int?) {
         industries = newIndustries
         selectedIndustryId = selectedId
         notifyDataSetChanged()
