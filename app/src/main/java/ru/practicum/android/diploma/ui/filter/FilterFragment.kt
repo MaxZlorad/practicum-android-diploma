@@ -20,7 +20,20 @@ class FilterFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var salaryText: String = ""
+        set(value) {
+            field = value
+            updateClearButtonVisibility()
+            updateButtonsVisibility()
+        }
+
     private var isNoSalaryChecked: Boolean = false
+        set(value) {
+            field = value
+            binding.checkboxSalary.setImageResource(
+                if (value) R.drawable.ic_checkbox_on_24 else R.drawable.ic_checkbox_off_24
+            )
+            updateButtonsVisibility()
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,26 +52,21 @@ class FilterFragment : Fragment() {
         setupSalaryInput()
         setupCheckbox()
         setupButtons()
-        updateButtonsVisibility()
         setupClickOutsideListener()
 
-        val isTextNotEmpty = binding.enterAmount.text?.toString()?.isNotEmpty() == true
-        val initialColorRes = if (isTextNotEmpty) R.color.black else R.color.gray
-        binding.salaryExpected.setTextColor(ContextCompat.getColor(requireContext(), initialColorRes))
+        updateSalaryLabelColor(hasFocus = false)
+        updateClearButtonVisibility()
     }
 
     private fun setupToolbar() {
-        binding.includeToolbar.btnBack.visibility = View.VISIBLE
-        binding.includeToolbar.toolbar.titleMarginStart =
-            resources.getDimensionPixelSize(R.dimen.indent_56)
-
-        binding.includeToolbar.toolbar.title = getString(R.string.filter_settings)
-
-        binding.buttonApply.setOnClickListener {
-            findNavController().navigate(R.id.action_filter_to_search)
+        with(binding.includeToolbar) {
+            btnBack.visibility = View.VISIBLE
+            toolbar.titleMarginStart = resources.getDimensionPixelSize(R.dimen.indent_56)
+            toolbar.title = getString(R.string.filter_settings)
+            btnBack.setOnClickListener { findNavController().popBackStack() }
         }
 
-        binding.includeToolbar.btnBack.setOnClickListener {
+        binding.buttonApply.setOnClickListener {
             findNavController().popBackStack()
         }
     }
@@ -70,78 +78,56 @@ class FilterFragment : Fragment() {
     }
 
     private fun setupSalaryInput() {
-        fun updateSalaryLabelColor() {
-            val isTextNotEmpty = binding.enterAmount.text?.toString()?.isNotEmpty() == true
-            val hasFocus = binding.enterAmount.hasFocus()
-            val colorRes = when {
-                hasFocus -> R.color.blue
-                isTextNotEmpty -> R.color.black
-                else -> R.color.gray
+        binding.enterAmount.apply {
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    clearFocusAndHideKeyboard()
+                    updateSalaryLabelColor(hasFocus = false)
+                    true
+                } else false
             }
 
-            binding.salaryExpected.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+            setOnFocusChangeListener { _, hasFocus ->
+                updateSalaryLabelColor(hasFocus)
+            }
+
+            addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    salaryText = s?.toString() ?: ""
+                    updateSalaryLabelColor(hasFocus())
+                }
+                override fun afterTextChanged(s: Editable?) = Unit
+            })
         }
-
-        binding.enterAmount.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                binding.enterAmount.clearFocus()
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(binding.enterAmount.windowToken, 0)
-                updateSalaryLabelColor()
-                true
-            } else {
-                false
-            }
-        }
-
-        binding.enterAmount.setOnFocusChangeListener { _, _ ->
-            updateSalaryLabelColor()
-        }
-
-        binding.enterAmount.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // Метод не используется
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                salaryText = s?.toString() ?: ""
-
-                updateSalaryLabelColor()
-                updateClearButtonVisibility()
-                updateButtonsVisibility()
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                // Метод не используется
-            }
-        })
 
         binding.buttonSalaryClear.setOnClickListener {
             binding.enterAmount.text?.clear()
             salaryText = ""
-
-            updateSalaryLabelColor()
-            updateClearButtonVisibility()
-            updateButtonsVisibility()
+            updateSalaryLabelColor(hasFocus = false)
         }
     }
 
     private fun setupClickOutsideListener() {
         binding.root.setOnClickListener {
-            val focusedView = requireActivity().currentFocus
-
-            if (focusedView != null) {
+            requireActivity().currentFocus?.let { focusedView ->
                 if (focusedView.id == R.id.enter_amount) {
-                    val isTextNotEmpty = binding.enterAmount.text?.toString()?.isNotEmpty() == true
-                    val colorRes = if (isTextNotEmpty) R.color.black else R.color.gray
-                    binding.salaryExpected.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
+                    updateSalaryLabelColor(hasFocus = false)
                 }
-
                 focusedView.clearFocus()
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(focusedView.windowToken, 0)
+                hideKeyboard(focusedView)
             }
         }
+    }
+
+    private fun updateSalaryLabelColor(hasFocus: Boolean) {
+        val isTextNotEmpty = binding.enterAmount.text?.toString()?.isNotEmpty() == true
+        val colorRes = when {
+            hasFocus -> R.color.blue
+            isTextNotEmpty -> R.color.black
+            else -> R.color.gray
+        }
+        binding.salaryExpected.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
     }
 
     private fun updateClearButtonVisibility() {
@@ -150,17 +136,8 @@ class FilterFragment : Fragment() {
     }
 
     private fun setupCheckbox() {
-        binding.checkboxSalary.setImageResource(R.drawable.ic_checkbox_off_24)
-
         binding.checkboxSalary.setOnClickListener {
             isNoSalaryChecked = !isNoSalaryChecked
-            val drawableRes = if (isNoSalaryChecked) {
-                R.drawable.ic_checkbox_on_24
-            } else {
-                R.drawable.ic_checkbox_off_24
-            }
-            binding.checkboxSalary.setImageResource(drawableRes)
-            updateButtonsVisibility()
         }
 
         binding.doNotShowWithoutSalary.setOnClickListener {
@@ -181,26 +158,24 @@ class FilterFragment : Fragment() {
     private fun resetAllFilters() {
         binding.enterAmount.text?.clear()
         salaryText = ""
-
-        binding.salaryExpected.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
-
         isNoSalaryChecked = false
-        binding.checkboxSalary.setImageResource(R.drawable.ic_checkbox_off_24)
-
-        updateClearButtonVisibility()
-        updateButtonsVisibility()
+        updateSalaryLabelColor(hasFocus = false)
     }
 
     private fun updateButtonsVisibility() {
         val hasFilters = salaryText.isNotEmpty() || isNoSalaryChecked
+        binding.buttonApply.visibility = if (hasFilters) View.VISIBLE else View.GONE
+        binding.buttonCancel.visibility = if (hasFilters) View.VISIBLE else View.GONE
+    }
 
-        if (hasFilters) {
-            binding.buttonApply.visibility = View.VISIBLE
-            binding.buttonCancel.visibility = View.VISIBLE
-        } else {
-            binding.buttonApply.visibility = View.GONE
-            binding.buttonCancel.visibility = View.GONE
-        }
+    private fun clearFocusAndHideKeyboard() {
+        binding.enterAmount.clearFocus()
+        hideKeyboard(binding.enterAmount)
+    }
+
+    private fun hideKeyboard(view: View) {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     override fun onDestroyView() {
