@@ -5,6 +5,7 @@ import ru.practicum.android.diploma.data.dto.IndustryResponse
 import ru.practicum.android.diploma.data.network.NetworkClient
 import ru.practicum.android.diploma.data.network.NetworkCodes
 import ru.practicum.android.diploma.domain.api.IndustryRepository
+import ru.practicum.android.diploma.domain.models.Industry
 import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import ru.practicum.android.diploma.domain.models.IndustrySearchResult
 
@@ -19,7 +20,9 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
 
                 NetworkCodes.SUCCESS_CODE -> {
                     val industryResponse = response as IndustryResponse
-                    val data = industryResponse.industries
+                    val data = industryResponse.industries.map {
+                        Industry(it.id, it.name)
+                    }
                     IndustrySearchResult(data, null)
                 }
 
