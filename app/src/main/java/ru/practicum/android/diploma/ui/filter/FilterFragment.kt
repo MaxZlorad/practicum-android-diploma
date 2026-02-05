@@ -84,7 +84,9 @@ class FilterFragment : Fragment() {
                     clearFocusAndHideKeyboard()
                     updateSalaryLabelColor(hasFocus = false)
                     true
-                } else false
+                } else {
+                    false
+                }
             }
 
             setOnFocusChangeListener { _, hasFocus ->
