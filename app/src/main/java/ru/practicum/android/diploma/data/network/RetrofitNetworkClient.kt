@@ -29,16 +29,14 @@ class RetrofitNetworkClient(private val context: Context, private val service: V
 
     private suspend fun handleIndustriesRequest(): Response {
         return try {
-            val industriesList = service.getIndustries()
-            IndustryResponse(industriesList).apply {
+            val industries = service.getIndustries()
+            IndustryResponse(industries).apply {
                 resultCode = NetworkCodes.SUCCESS_CODE
             }
-        } catch (_: SocketTimeoutException) {
-            createErrorResponse(NetworkCodes.TIMEOUT_CODE)
-        } catch (_: IOException) {
-            createErrorResponse(NetworkCodes.NO_NETWORK_CODE)
         } catch (e: HttpException) {
-            createErrorResponse(e.code())
+            Response().apply {
+                resultCode = e.code()
+            }
         }
     }
 
