@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentIndustryBinding
 import ru.practicum.android.diploma.domain.models.Industry
 
@@ -36,6 +37,11 @@ class IndustryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.includeToolbar.btnBack.visibility = View.VISIBLE
+        binding.includeToolbar.toolbar.titleMarginStart =
+            resources.getDimensionPixelSize(R.dimen.indent_56)
+
+        binding.includeToolbar.toolbar.title = getString(R.string.title_industry)
         binding.includeToolbar.btnBack.setOnClickListener {
             findNavController().popBackStack()
         }
