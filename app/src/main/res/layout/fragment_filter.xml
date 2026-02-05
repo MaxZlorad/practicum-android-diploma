@@ -43,6 +43,7 @@
         android:layout_height="@dimen/dp_48"
         android:gravity="center_vertical"
         android:text="@string/industry"
+        android:textColor="@color/gray"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="@+id/left_guideline"
         app:layout_constraintEnd_toEndOf="@+id/right_guideline"
@@ -174,7 +175,7 @@
         android:textColor="@color/white"
         android:layout_marginBottom="@dimen/dp_8"
         android:padding="@dimen/dp_0"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/button_cancel"
         app:layout_constraintEnd_toEndOf="@+id/right_guideline"
         app:layout_constraintStart_toStartOf="@+id/left_guideline" />
@@ -188,7 +189,7 @@
         android:textColor="@color/red"
         android:background="@android:color/transparent"
         android:layout_marginBottom="@dimen/dp_24"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/right_guideline"
         app:layout_constraintStart_toStartOf="@+id/left_guideline" />

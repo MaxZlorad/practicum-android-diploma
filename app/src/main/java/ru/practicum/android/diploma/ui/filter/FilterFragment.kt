@@ -70,8 +70,6 @@ class FilterFragment : Fragment() {
     }
 
     private fun setupSalaryInput() {
-        binding.enterAmount.inputType = android.text.InputType.TYPE_CLASS_NUMBER
-
         fun updateSalaryLabelColor() {
             val isTextNotEmpty = binding.enterAmount.text?.toString()?.isNotEmpty() == true
             val hasFocus = binding.enterAmount.hasFocus()
@@ -101,7 +99,9 @@ class FilterFragment : Fragment() {
         }
 
         binding.enterAmount.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // Метод не используется
+            }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 salaryText = s?.toString() ?: ""
@@ -112,11 +112,7 @@ class FilterFragment : Fragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
-                val filtered = s?.toString()?.filter { it.isDigit() }
-                if (filtered != s?.toString()) {
-                    binding.enterAmount.setText(filtered)
-                    binding.enterAmount.setSelection(filtered?.length ?: 0)
-                }
+                // Метод не используется
             }
         })
 
