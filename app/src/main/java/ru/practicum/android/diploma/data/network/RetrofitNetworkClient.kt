@@ -9,7 +9,6 @@ import ru.practicum.android.diploma.data.dto.Response
 import ru.practicum.android.diploma.data.dto.VacancyDetailsRequest
 import ru.practicum.android.diploma.data.dto.VacancyDetailsResponse
 import ru.practicum.android.diploma.data.dto.VacancyRequest
-import ru.practicum.android.diploma.domain.models.Industry
 import ru.practicum.android.diploma.util.isConnected
 import java.net.SocketTimeoutException
 
@@ -30,9 +29,7 @@ class RetrofitNetworkClient(private val context: Context, private val service: V
 
     private suspend fun handleIndustriesRequest(): Response {
         return try {
-            val industries = service.getIndustries().map {
-                Industry(it.id, it.name)
-            }
+            val industries = service.getIndustries()
             IndustryResponse(industries).apply {
                 resultCode = NetworkCodes.SUCCESS_CODE
             }
