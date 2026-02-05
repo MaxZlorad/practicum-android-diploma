@@ -58,6 +58,8 @@
         <item name="android:textColorHint">?attr/customEditTextHintColor</item>
         <item name="android:background">@drawable/edit_text_field</item>
         <item name="android:textCursorDrawable">@drawable/cursor_light</item>
+        <item name="android:colorAccent">@color/blue</item>
+        <item name="android:colorControlActivated">@color/blue</item>
     </style>
 
     <style name="TextAppearance.Bold32" parent="@android:style/TextAppearance">

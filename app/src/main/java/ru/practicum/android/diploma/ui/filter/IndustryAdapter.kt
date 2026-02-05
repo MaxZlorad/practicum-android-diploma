@@ -6,11 +6,19 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.practicum.android.diploma.databinding.ItemIndustryBinding
 import ru.practicum.android.diploma.domain.models.Industry
 
-class IndustryAdapter(private var industries: List<Industry>, private var selectedIndustryId: Int? = null) :
-    RecyclerView.Adapter<IndustryViewHolder>() {
-    var onIndustriesClickListener: ((Industry) -> Unit)? = null
+class IndustryAdapter(
+    private val onIndustryClick: (Industry) -> Unit
+) : RecyclerView.Adapter<IndustryViewHolder>() {
+
+    private var industries: List<Industry> = emptyList()
+    private var selectedIndustryId: Int? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IndustryViewHolder {
-        val binding = ItemIndustryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemIndustryBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         return IndustryViewHolder(binding)
     }
 
@@ -19,24 +27,21 @@ class IndustryAdapter(private var industries: List<Industry>, private var select
     override fun onBindViewHolder(holder: IndustryViewHolder, position: Int) {
         val industry = industries[position]
         val isSelected = industry.id == selectedIndustryId
+
         holder.bind(industry, isSelected)
+
         holder.itemView.setOnClickListener {
-            val previousSelectedId = selectedIndustryId
-            selectedIndustryId = industry.id
-            if (previousSelectedId != null) {
-                val previousPosition = industries.indexOfFirst { it.id == previousSelectedId }
-                if (previousPosition != -1) {
-                    notifyItemChanged(previousPosition)
-                }
-            }
-            notifyItemChanged(position)
-            onIndustriesClickListener?.invoke(industries[position])
+            onIndustryClick(industry)
         }
     }
 
-    fun updateIndustries(newIndustries: List<Industry>, selectedId: Int?) {
+    fun submitList(
+        newIndustries: List<Industry>,
+        selectedId: Int?
+    ) {
         industries = newIndustries
         selectedIndustryId = selectedId
         notifyDataSetChanged()
     }
 }
+

@@ -7,82 +7,111 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.domain.api.IndustryInteractor
 import ru.practicum.android.diploma.domain.models.Industry
-import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import java.util.Locale
 
 class IndustryViewModel(
     private val industryInteractor: IndustryInteractor,
-    // provate val sharedPrefInteractor: SharedPrefInteractor
+    // private val sharedPrefInteractor: SharedPrefInteractor
 ) : ViewModel() {
-    private val industries = mutableListOf<Industry>()
-    private var selectedIndustryId: String? = null
-    private var savedIndustryId: Int? = NO_SELECTED
-    private val _stateLiveData = MutableLiveData<IndustryState>(IndustryState.Empty)
+    private val allIndustries = mutableListOf<Industry>()
+    private var selectedIndustryId: Int = NOT_SELECTED
+    private var savedIndustryId: Int = NOT_SELECTED
+    private val _stateLiveData = MutableLiveData<IndustryState>()
     val stateLiveData: LiveData<IndustryState> = _stateLiveData
-    private val _isButtonVisibleLiveData = MutableLiveData<Boolean>(false)
-    val isButtonVisibleLiveData: LiveData<Boolean> = _isButtonVisibleLiveData
-
-
-    fun observeIsButtonVisible(): LiveData<Boolean> = isButtonVisibleLiveData
-
-    fun observeState(): LiveData<IndustryState> = stateLiveData
-
+    private val _isButtonEnabled = MutableLiveData(false)
+    val isButtonEnabled: LiveData<Boolean> = _isButtonEnabled
     fun loadIndustries() {
         _stateLiveData.value = IndustryState.Loading
+
         viewModelScope.launch {
-            // savedIndustryId = sharedPrefInteractor.getFilter().industryId?: NO_SELECTED
-            industries.clear()
+            allIndustries.clear()
+
             val response = industryInteractor.getIndustries()
-            if (!response.data.isNullOrEmpty()) {
-                industries.addAll(response.data)
+            val data = response.data
+                ?.sortedBy { it.name.lowercase(Locale.getDefault()) }
+                ?: emptyList()
+
+            allIndustries.addAll(data)
+
+            // TEMP:
+            // savedIndustryId = sharedPrefInteractor.getFilter().industryId ?: NOT_SELECTED
+            savedIndustryId = HARDCODED_TEST
+            selectedIndustryId = savedIndustryId
+
+            if (savedIndustryId != NOT_SELECTED &&
+                allIndustries.none { it.id == savedIndustryId }
+            ) {
+                savedIndustryId = NOT_SELECTED
+                selectedIndustryId = NOT_SELECTED
             }
-            processResult(industries, response.error)
+
+            when {
+                response.error != null ->
+                    _stateLiveData.postValue(IndustryState.Error(response.error))
+
+                data.isEmpty() ->
+                    _stateLiveData.postValue(IndustryState.Empty)
+
+                else ->
+                    _stateLiveData.postValue(IndustryState.Content(data))
+            }
+            updateButtonEnabled()
         }
     }
 
-
-    private fun processResult(foundIndustries: List<Industry>?, errorCode: IndustrySearchError?) {
-        industries.clear()
-        if (foundIndustries != null) {
-            val sortedIndustries = foundIndustries.sortedBy {
-                it.name.lowercase(Locale.getDefault())
-            }
-            industries.addAll(sortedIndustries)
-        }
-        when {
-            errorCode != null -> {
-                renderState(IndustryState.Error(errorCode))
-            }
-
-            industries.isEmpty() -> {
-                renderState(IndustryState.Empty)
-            }
-
-            else -> {
-                renderState(IndustryState.Content(industries))
+    fun search(query: String) {
+        val filtered = if (query.isBlank()) {
+            allIndustries
+        } else {
+            allIndustries.filter {
+                it.name.contains(query, ignoreCase = true)
             }
         }
-        // updateButtonVisibility()
+
+        if (filtered.isEmpty()) {
+            _stateLiveData.value = IndustryState.Empty
+        } else {
+            _stateLiveData.value = IndustryState.Content(filtered)
+        }
     }
 
-    private fun renderState(state: IndustryState) {
-        _stateLiveData.postValue(state)
+    fun getSelectedIndustryId(): Int? =
+        selectedIndustryId.takeIf { it != NOT_SELECTED }
+
+    fun onIndustrySelected(industryId: Int) {
+        selectedIndustryId = industryId
+        updateButtonEnabled()
+
+        (_stateLiveData.value as? IndustryState.Content)?.let {
+            _stateLiveData.value = it.copy(industries = it.industries)
+        }
     }
 
-    /*    private fun updateButtonVisibility() {
-            val isSelectedInCurrentList = selectedIndustryId?.let { selectedId ->
-                filteredIndustries.any { it.id == selectedId }
-            } ?: false
-            if (selectedIndustryId == null || !isSelectedInCurrentList) {
-                isButtonVisibleLiveData.postValue(false)
-                return
-            }
-            val shouldShow = savedIndustryId == null || selectedIndustryId != savedIndustryId
-            isButtonVisibleLiveData.postValue(shouldShow)
-        }*/
+    private fun updateButtonEnabled() {
+        _isButtonEnabled.value =
+            savedIndustryId != NOT_SELECTED ||
+                selectedIndustryId != NOT_SELECTED
+    }
 
+    fun onApplyClicked() {
+        val industryToSave =
+            if (selectedIndustryId != NOT_SELECTED)
+                selectedIndustryId
+            else
+                savedIndustryId
+
+        if (industryToSave == NOT_SELECTED) return
+
+        // sharedPrefInteractor.saveFilter(
+        //     Filter(industryId = industryToSave)
+        // )
+
+        savedIndustryId = industryToSave
+        selectedIndustryId = industryToSave
+        updateButtonEnabled()
+    }
     companion object {
-        private const val NO_SELECTED = -1
+        private const val NOT_SELECTED = -1
         private const val HARDCODED_TEST = 7 // for test without shared prefs interactor
     }
 }
