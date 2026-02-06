@@ -15,8 +15,19 @@ class SearchVacanciesInteractorImpl(private val repository: SearchVacanciesRepos
         return repository.searchVacancies(sanitizedFilters)
     }
 
+    /**
+     * Легкая очистка на клиентской стороне:
+     * - Удаляем управляющие и необычные символы
+     * - Сводим несколько пробелов к одному
+     *
+     * ВНИМАНИЕ: это "не полная очистка". На сервере выполняется
+     * полноценная нормализация, фильтрация и проверка безопасности.
+     */
     private fun sanitizeText(text: String): String {
-        return text.replace(Regex("[^\\p{L}\\p{N}.&\\-'/ ]+"), "")
+        return text
+            // Оставляем буквы, цифры, базовую пунктуацию и пробелы
+            .replace(Regex("[^\\p{L}\\p{N}.&\\-'/ ]+"), "")
+            // Сводим несколько пробелов к одному
             .replace(Regex("\\s+"), " ")
             .trim()
     }
