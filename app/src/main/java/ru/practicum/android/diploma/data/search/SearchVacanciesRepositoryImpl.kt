@@ -29,7 +29,7 @@ class SearchVacanciesRepositoryImpl(
 
             savedFilters.salaryFrom?.let { put("salary", it.toString()) }
 
-            if (savedFilters.onlyWithSalary) { put("only_with_salary", "true") }
+            if (savedFilters.onlyWithSalary) put("only_with_salary", "true")
         }
         val response = networkClient.doRequest(VacancyRequest(queryMap))
         when (response.resultCode) {
