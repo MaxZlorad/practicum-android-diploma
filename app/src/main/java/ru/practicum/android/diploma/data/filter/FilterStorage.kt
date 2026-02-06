@@ -1,13 +1,15 @@
 package ru.practicum.android.diploma.data.filter
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.google.gson.Gson
 import ru.practicum.android.diploma.domain.models.FilterParameters
 
-class FilterStorage(context: Context) {
-    private val prefs: SharedPreferences = context.getSharedPreferences(FILTER_PREFS_NAME, Context.MODE_PRIVATE)
-    private val gson = Gson()
+class FilterStorage(
+    context: Context,
+    private val gson: Gson
+) {
+    private val prefs =
+        context.getSharedPreferences(FILTER_PREFS_NAME, Context.MODE_PRIVATE)
 
     fun saveFilters(filters: FilterParameters) {
         prefs.edit()
@@ -16,10 +18,10 @@ class FilterStorage(context: Context) {
     }
 
     fun getFilters(): FilterParameters {
-        val json = prefs.getString(KEY_FILTERS, null)
-        return if (json != null) {
+        val json = prefs.getString(KEY_FILTERS, null) ?: return FilterParameters()
+        return runCatching {
             gson.fromJson(json, FilterParameters::class.java)
-        } else {
+        }.getOrElse {
             FilterParameters()
         }
     }

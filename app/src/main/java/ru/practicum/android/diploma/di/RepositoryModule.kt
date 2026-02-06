@@ -30,5 +30,5 @@ val repositoryModule = module {
     single<FilterRepository> {
         FilterRepositoryImpl(get())
     }
-    single { FilterStorage(androidContext()) }
+    single { FilterStorage(androidContext(), get()) }
 }
