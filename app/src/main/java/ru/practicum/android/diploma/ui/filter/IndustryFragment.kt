@@ -28,7 +28,6 @@ class IndustryFragment : Fragment() {
             viewModel.onIndustrySelected(industry.id)
         }
     }
-    private lateinit var searchDebounce: (String) -> Unit
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,14 +41,15 @@ class IndustryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupToolbar()
-        setupAdapters()
+        setupRecyclerView()
+        setupSearch()
+        setupButtons()
         observeViewModel()
 
         viewModel.loadIndustries()
     }
 
     private fun observeViewModel() {
-
         viewModel.stateLiveData.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is IndustryState.Loading -> showLoading()
@@ -76,7 +76,18 @@ class IndustryFragment : Fragment() {
         }
     }
 
-    private fun setupAdapters() {
+    private fun setupRecyclerView() {
+        binding.rvIndustries.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvIndustries.adapter = adapter
+    }
+
+    private fun setupSearch() {
+        setupSearchIme()
+        setupSearchTextChange()
+        setupSearchClear()
+    }
+
+    private fun setupSearchIme() {
         binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val query = binding.searchInput.text?.toString().orEmpty()
@@ -88,34 +99,46 @@ class IndustryFragment : Fragment() {
                 false
             }
         }
-        binding.rvIndustries.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvIndustries.adapter = adapter
-        searchDebounce = debounce(
+    }
+
+    private fun setupSearchTextChange() {
+        val searchDebounce = debounce(
             delayMillis = DEBOUNCE_DELAY,
             coroutineScope = viewLifecycleOwner.lifecycleScope,
             useLastParam = true
-        ) { query ->
+        ) { query: String ->
             viewModel.search(query)
         }
+
         binding.searchInput.doOnTextChanged { text, _, _, _ ->
             val query = text?.toString().orEmpty()
-            binding.drawableEnd.setImageResource(
-                if (query.isNotEmpty()) {
-                    R.drawable.ic_clear
-                } else {
-                    R.drawable.ic_search_24
-                }
-            )
+            updateSearchIcon(query)
             searchDebounce(query)
         }
-        binding.btnApply.setOnClickListener {
-            viewModel.onApplyClicked()
-            findNavController().popBackStack()
-        }
+    }
+
+    private fun setupSearchClear() {
         binding.drawableEnd.setOnClickListener {
             if (!binding.searchInput.text.isNullOrEmpty()) {
                 clearSearch()
             }
+        }
+    }
+
+    private fun updateSearchIcon(query: String) {
+        binding.drawableEnd.setImageResource(
+            if (query.isNotEmpty()) {
+                R.drawable.ic_clear
+            } else {
+                R.drawable.ic_search_24
+            }
+        )
+    }
+
+    private fun setupButtons() {
+        binding.btnApply.setOnClickListener {
+            viewModel.onApplyClicked()
+            findNavController().popBackStack()
         }
     }
 
