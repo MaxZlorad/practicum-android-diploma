@@ -1,5 +1,7 @@
 package ru.practicum.android.diploma.data.search
 
+import android.content.res.Resources
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.data.dto.PhoneDto
 import ru.practicum.android.diploma.data.dto.Salary
 import ru.practicum.android.diploma.data.dto.VacancyDto
@@ -7,7 +9,7 @@ import ru.practicum.android.diploma.domain.models.Vacancy
 import java.util.Locale
 
 object VacancyDtoMapper {
-    fun map(dto: VacancyDto): Vacancy {
+    fun map(dto: VacancyDto, resources: Resources): Vacancy {
         val displayName = formatName(dto.name, dto.address?.city, dto.area.name)
 
         return Vacancy(
@@ -24,7 +26,7 @@ object VacancyDtoMapper {
             salaryFrom = dto.salary?.from,
             salaryTo = dto.salary?.to,
             currency = dto.salary?.currency,
-            salaryTitle = formatSalary(dto.salary),
+            salaryTitle = formatSalary(dto.salary, resources),
             city = dto.address?.city,
             street = dto.address?.street,
             building = dto.address?.building,
@@ -38,40 +40,41 @@ object VacancyDtoMapper {
         )
     }
 
-    fun mapList(dtoList: List<VacancyDto>?): List<Vacancy> {
-        return dtoList?.map { map(it) } ?: emptyList()
+    fun mapList(
+        dtoList: List<VacancyDto>?,
+        resources: Resources
+    ): List<Vacancy> {
+        return dtoList?.map { map(it, resources) } ?: emptyList()
     }
 
-    fun formatSalary(salary: Salary?): String {
-        return if (salary != null) {
-            buildString {
-                val formattedFrom = salary.from?.let { formatNumber(it) }
-                val formattedTo = salary.to?.let { formatNumber(it) }
-
-                when {
-                    formattedFrom != null && formattedTo != null ->
-                        append("От $formattedFrom до $formattedTo")
-
-                    formattedFrom != null ->
-                        append("От $formattedFrom")
-
-                    formattedTo != null ->
-                        append("До $formattedTo")
-
-                    else ->
-                        return "Зарплата не указана"
-                }
-
-                salary.currency?.let { currency ->
-                    if (currency.isNotBlank()) {
-                        append(" ")
-                        append(getCurrencySymbol(currency))
-                    }
-                }
-            }
-        } else {
-            "Зарплата не указана"
+    fun formatSalary(
+        salary: Salary?,
+        resources: Resources
+    ): String {
+        if (salary == null) {
+            return resources.getString(R.string.salary_not_specified)
         }
+
+        val from = salary.from?.let { formatNumber(it) }
+        val to = salary.to?.let { formatNumber(it) }
+
+        val base = when {
+            from != null && to != null ->
+                resources.getString(R.string.salary_from_to, from, to)
+
+            from != null ->
+                resources.getString(R.string.salary_from, from)
+
+            to != null ->
+                resources.getString(R.string.salary_to, to)
+
+            else ->
+                resources.getString(R.string.salary_not_specified)
+        }
+
+        return salary.currency?.let { currency ->
+            "$base ${getCurrencySymbol(currency)}"
+        } ?: base
     }
 
     fun formatName(name: String, city: String?, areaName: String): String {

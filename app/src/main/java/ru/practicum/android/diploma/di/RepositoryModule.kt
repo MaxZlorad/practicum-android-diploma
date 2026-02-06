@@ -16,7 +16,7 @@ import ru.practicum.android.diploma.domain.api.VacancyDetailsRepository
 
 val repositoryModule = module {
     single<SearchVacanciesRepository> {
-        SearchVacanciesRepositoryImpl(get(), get<FilterRepository>())
+        SearchVacanciesRepositoryImpl(get(), get<FilterRepository>(), androidContext().resources)
     }
     single<VacancyDetailsRepository> {
         VacancyDetailsRepositoryImpl(get(), get(), androidContext())

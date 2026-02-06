@@ -1,5 +1,6 @@
 package ru.practicum.android.diploma.data.search
 
+import android.content.res.Resources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -16,7 +17,8 @@ import ru.practicum.android.diploma.domain.models.VacancySearchResult
 
 class SearchVacanciesRepositoryImpl(
     private val networkClient: NetworkClient,
-    private val filterRepository: FilterRepository
+    private val filterRepository: FilterRepository,
+    private val resources: Resources
 ) : SearchVacanciesRepository {
 
     override fun searchVacancies(filter: VacancySearchFilter): Flow<VacancySearchResult> = flow {
@@ -42,8 +44,10 @@ class SearchVacanciesRepositoryImpl(
             NetworkCodes.SUCCESS_CODE -> {
                 val vacanciesResponse = response as VacancyResponse
                 val vacancies: List<Vacancy> =
-                    VacancyDtoMapper.mapList(vacanciesResponse.vacancies)
-
+                    VacancyDtoMapper.mapList(
+                        vacanciesResponse.vacancies,
+                        resources
+                    )
                 emit(
                     VacancySearchResult(
                         totalFound = vacanciesResponse.found,
