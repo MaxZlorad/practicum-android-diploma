@@ -5,13 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import ru.practicum.android.diploma.domain.api.FilterInteractor
 import ru.practicum.android.diploma.domain.api.IndustryInteractor
+import ru.practicum.android.diploma.domain.models.FilterParameters
 import ru.practicum.android.diploma.domain.models.Industry
 import java.util.Locale
 
 class IndustryViewModel(
     private val industryInteractor: IndustryInteractor,
-    // private val filter: FilterInteractor
+    private val filter: FilterInteractor
 ) : ViewModel() {
     private val allIndustries = mutableListOf<Industry>()
     private var selectedIndustryId: Int? = null
@@ -33,8 +35,7 @@ class IndustryViewModel(
 
             allIndustries.addAll(data)
 
-            // TEMP:
-            // savedIndustryId = filter.getFilters().industryId ?: NOT_SELECTED
+            savedIndustryId = filter.getFilters().industryId
             selectedIndustryId = savedIndustryId
 
             if (savedIndustryId != null &&
@@ -67,10 +68,10 @@ class IndustryViewModel(
             }
         }
 
-        if (filtered.isEmpty()) {
-            _stateLiveData.value = IndustryState.Empty
+        _stateLiveData.value = if (filtered.isEmpty()) {
+            IndustryState.Empty
         } else {
-            _stateLiveData.value = IndustryState.Content(filtered)
+            IndustryState.Content(filtered)
         }
     }
 
@@ -87,22 +88,18 @@ class IndustryViewModel(
 
     private fun updateButtonEnabled() {
         _isButtonEnabled.value =
-            savedIndustryId != null || selectedIndustryId != null
+            selectedIndustryId != null || savedIndustryId != null
     }
 
     fun onApplyClicked() {
         val industryToSave = selectedIndustryId ?: savedIndustryId ?: return
 
-        // filter.saveFilters(
-        //     FilterParameters(industryId = industryToSave)
-        // )
+        filter.saveFilters(
+            FilterParameters(industryId = industryToSave)
+        )
 
         savedIndustryId = industryToSave
         selectedIndustryId = industryToSave
         updateButtonEnabled()
-    }
-
-    companion object {
-        private const val NOT_SELECTED = -1
     }
 }

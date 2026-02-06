@@ -98,11 +98,24 @@ class IndustryFragment : Fragment() {
             viewModel.search(query)
         }
         binding.searchInput.doOnTextChanged { text, _, _, _ ->
-            searchDebounce(text?.toString().orEmpty())
+            val query = text?.toString().orEmpty()
+            binding.drawableEnd.setImageResource(
+                if (query.isNotEmpty()) {
+                    R.drawable.ic_clear
+                } else {
+                    R.drawable.ic_search_24
+                }
+            )
+            searchDebounce(query)
         }
         binding.btnApply.setOnClickListener {
             viewModel.onApplyClicked()
             findNavController().popBackStack()
+        }
+        binding.drawableEnd.setOnClickListener {
+            if (!binding.searchInput.text.isNullOrEmpty()) {
+                clearSearch()
+            }
         }
     }
 
@@ -138,6 +151,12 @@ class IndustryFragment : Fragment() {
         )
     }
 
+    private fun clearSearch() {
+        binding.searchInput.setText("")
+        hideKeyboard()
+        viewModel.search("")
+    }
+
     private fun hideKeyboard() {
         val imm = requireContext()
             .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -150,6 +169,6 @@ class IndustryFragment : Fragment() {
     }
 
     companion object {
-        private const val DEBOUNCE_DELAY = 500L
+        private const val DEBOUNCE_DELAY = 1000L
     }
 }

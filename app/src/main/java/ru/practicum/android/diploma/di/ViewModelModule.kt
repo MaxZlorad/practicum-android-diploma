@@ -20,6 +20,6 @@ val viewModelModule = module {
     }
 
     viewModel {
-        IndustryViewModel(get()/*, get()*/) // FilterInteractor get()
+        IndustryViewModel(get(), get())
     }
 }
