@@ -153,5 +153,3 @@ class IndustryFragment : Fragment() {
         private const val DEBOUNCE_DELAY = 500L
     }
 }
-
-

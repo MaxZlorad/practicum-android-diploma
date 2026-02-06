@@ -20,6 +20,6 @@ val viewModelModule = module {
     }
 
     viewModel {
-        IndustryViewModel(get()/*, get()*/) // sharedPrefInteractor get()
+        IndustryViewModel(get()/*, get()*/) // FilterInteractor get()
     }
 }

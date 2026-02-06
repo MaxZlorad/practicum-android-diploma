@@ -39,9 +39,20 @@ class IndustryAdapter(
         newIndustries: List<Industry>,
         selectedId: Int?
     ) {
+        val oldSelectedId = selectedIndustryId
         industries = newIndustries
         selectedIndustryId = selectedId
-        notifyDataSetChanged()
+
+        if (oldSelectedId == null && selectedId == null) {
+            notifyDataSetChanged()
+            return
+        }
+
+        val oldIndex = industries.indexOfFirst { it.id == oldSelectedId }
+        val newIndex = industries.indexOfFirst { it.id == selectedId }
+
+        setOf(oldIndex, newIndex)
+            .filter { it >= 0 }
+            .forEach(::notifyItemChanged)
     }
 }
-

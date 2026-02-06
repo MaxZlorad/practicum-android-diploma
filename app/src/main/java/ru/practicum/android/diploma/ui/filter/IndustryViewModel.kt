@@ -11,11 +11,11 @@ import java.util.Locale
 
 class IndustryViewModel(
     private val industryInteractor: IndustryInteractor,
-    // private val sharedPrefInteractor: SharedPrefInteractor
+    // private val filter: FilterInteractor
 ) : ViewModel() {
     private val allIndustries = mutableListOf<Industry>()
-    private var selectedIndustryId: Int = NOT_SELECTED
-    private var savedIndustryId: Int = NOT_SELECTED
+    private var selectedIndustryId: Int? = null
+    private var savedIndustryId: Int? = null
     private val _stateLiveData = MutableLiveData<IndustryState>()
     val stateLiveData: LiveData<IndustryState> = _stateLiveData
     private val _isButtonEnabled = MutableLiveData(false)
@@ -34,15 +34,14 @@ class IndustryViewModel(
             allIndustries.addAll(data)
 
             // TEMP:
-            // savedIndustryId = sharedPrefInteractor.getFilter().industryId ?: NOT_SELECTED
-            savedIndustryId = HARDCODED_TEST
+            // savedIndustryId = filter.getFilters().industryId ?: NOT_SELECTED
             selectedIndustryId = savedIndustryId
 
-            if (savedIndustryId != NOT_SELECTED &&
+            if (savedIndustryId != null &&
                 allIndustries.none { it.id == savedIndustryId }
             ) {
-                savedIndustryId = NOT_SELECTED
-                selectedIndustryId = NOT_SELECTED
+                savedIndustryId = null
+                selectedIndustryId = null
             }
 
             when {
@@ -75,8 +74,7 @@ class IndustryViewModel(
         }
     }
 
-    fun getSelectedIndustryId(): Int? =
-        selectedIndustryId.takeIf { it != NOT_SELECTED }
+    fun getSelectedIndustryId(): Int? = selectedIndustryId
 
     fun onIndustrySelected(industryId: Int) {
         selectedIndustryId = industryId
@@ -89,29 +87,22 @@ class IndustryViewModel(
 
     private fun updateButtonEnabled() {
         _isButtonEnabled.value =
-            savedIndustryId != NOT_SELECTED ||
-                selectedIndustryId != NOT_SELECTED
+            savedIndustryId != null || selectedIndustryId != null
     }
 
     fun onApplyClicked() {
-        val industryToSave =
-            if (selectedIndustryId != NOT_SELECTED)
-                selectedIndustryId
-            else
-                savedIndustryId
+        val industryToSave = selectedIndustryId ?: savedIndustryId ?: return
 
-        if (industryToSave == NOT_SELECTED) return
-
-        // sharedPrefInteractor.saveFilter(
-        //     Filter(industryId = industryToSave)
+        // filter.saveFilters(
+        //     FilterParameters(industryId = industryToSave)
         // )
 
         savedIndustryId = industryToSave
         selectedIndustryId = industryToSave
         updateButtonEnabled()
     }
+
     companion object {
         private const val NOT_SELECTED = -1
-        private const val HARDCODED_TEST = 7 // for test without shared prefs interactor
     }
 }
