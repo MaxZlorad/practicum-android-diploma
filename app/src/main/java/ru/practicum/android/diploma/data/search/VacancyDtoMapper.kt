@@ -5,6 +5,16 @@ import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.data.dto.PhoneDto
 import ru.practicum.android.diploma.data.dto.Salary
 import ru.practicum.android.diploma.data.dto.VacancyDto
+import ru.practicum.android.diploma.data.search.CurrencySymbols.AZN
+import ru.practicum.android.diploma.data.search.CurrencySymbols.BYN
+import ru.practicum.android.diploma.data.search.CurrencySymbols.EUR
+import ru.practicum.android.diploma.data.search.CurrencySymbols.GEL
+import ru.practicum.android.diploma.data.search.CurrencySymbols.KGT
+import ru.practicum.android.diploma.data.search.CurrencySymbols.KZT
+import ru.practicum.android.diploma.data.search.CurrencySymbols.RUB
+import ru.practicum.android.diploma.data.search.CurrencySymbols.UAH
+import ru.practicum.android.diploma.data.search.CurrencySymbols.USD
+import ru.practicum.android.diploma.data.search.CurrencySymbols.UZS
 import ru.practicum.android.diploma.domain.models.Vacancy
 import java.util.Locale
 
@@ -88,16 +98,16 @@ object VacancyDtoMapper {
 
     private fun getCurrencySymbol(currencyCode: String): String {
         return when (currencyCode.uppercase()) {
-            "RUR", "RUB" -> "₽"
-            "BYR" -> "Br"
-            "USD" -> "$"
-            "EUR" -> "€"
-            "KZT" -> "₸"
-            "UAH" -> "₴"
-            "AZN" -> "₼"
-            "UZS" -> "сўм"
-            "GEL" -> "₾"
-            "KGT" -> "сом"
+            "RUR", "RUB" -> RUB
+            "BYR" -> BYN
+            "USD" -> USD
+            "EUR" -> EUR
+            "KZT" -> KZT
+            "UAH" -> UAH
+            "AZN" -> AZN
+            "UZS" -> UZS
+            "GEL" -> GEL
+            "KGT" -> KGT
             else -> currencyCode
         }
     }
