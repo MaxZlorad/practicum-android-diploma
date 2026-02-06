@@ -25,17 +25,11 @@ class SearchVacanciesRepositoryImpl(
             put("text", filter.text ?: "")
             put("page", filter.page.toString())
 
-            savedFilters.industryId?.let {
-                put("industry", it.toString())
-            }
+            savedFilters.industryId?.let { put("industry", it.toString()) }
 
-            savedFilters.salaryFrom?.let {
-                put("salary", it.toString())
-            }
+            savedFilters.salaryFrom?.let { put("salary", it.toString()) }
 
-            if (savedFilters.onlyWithSalary) {
-                put("only_with_salary", "true")
-            }
+            if (savedFilters.onlyWithSalary) { put("only_with_salary", "true") }
         }
         val response = networkClient.doRequest(VacancyRequest(queryMap))
         when (response.resultCode) {
