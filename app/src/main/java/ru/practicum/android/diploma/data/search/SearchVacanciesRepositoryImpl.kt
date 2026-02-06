@@ -24,19 +24,19 @@ class SearchVacanciesRepositoryImpl(
     override fun searchVacancies(filter: VacancySearchFilter): Flow<VacancySearchResult> = flow {
         val savedFilters = filterRepository.getFilters()
         val queryMap = mutableMapOf<String, String>().apply {
-            put("text", filter.text ?: "")
-            put("page", filter.page.toString())
+            put(KEY_TEXT, filter.text ?: EMPTY_STRING)
+            put(KEY_PAGE, filter.page.toString())
 
             savedFilters.industryId?.let {
-                put("industry", it.toString())
+                put(KEY_INDUSTRY, it.toString())
             }
 
             savedFilters.salaryFrom?.let {
-                put("salary", it.toString())
+                put(KEY_SALARY, it.toString())
             }
 
             if (savedFilters.onlyWithSalary) {
-                put("only_with_salary", "true")
+                put(KEY_ONLY_WITH_SALARY, VALUE_TRUE)
             }
         }
         val response = networkClient.doRequest(VacancyRequest(queryMap))
@@ -70,4 +70,14 @@ class SearchVacanciesRepositoryImpl(
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    companion object {
+        private const val KEY_TEXT = "text"
+        private const val KEY_PAGE = "page"
+        private const val KEY_INDUSTRY = "industry"
+        private const val KEY_SALARY = "salary"
+        private const val KEY_ONLY_WITH_SALARY = "only_with_salary"
+        private const val VALUE_TRUE = "true"
+        private const val EMPTY_STRING = ""
+    }
 }
