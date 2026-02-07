@@ -20,6 +20,6 @@ val viewModelModule = module {
     }
 
     viewModel {
-        IndustryViewModel(get())
+        IndustryViewModel(get(), get())
     }
 }
