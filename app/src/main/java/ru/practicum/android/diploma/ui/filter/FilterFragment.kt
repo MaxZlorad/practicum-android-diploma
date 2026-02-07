@@ -11,13 +11,16 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.databinding.FragmentFilterBinding
 
 class FilterFragment : Fragment() {
     private var _binding: FragmentFilterBinding? = null
     private val binding get() = _binding!!
+    private val viewModel: FilterViewModel by viewModel()
 
     private var salaryText: String = ""
         set(value) {
@@ -54,8 +57,78 @@ class FilterFragment : Fragment() {
         setupButtons()
         setupClickOutsideListener()
 
+        setupFragmentResultListener()
+
+        observeViewModel()
+        loadSavedFilters()
+
         updateSalaryLabelColor(hasFocus = false)
         updateClearButtonVisibility()
+    }
+
+    private fun setupFragmentResultListener() {
+        setFragmentResultListener(IndustryFragment.REQUEST_KEY_INDUSTRY) { requestKey, bundle ->
+            if (requestKey == IndustryFragment.REQUEST_KEY_INDUSTRY) {
+                val industryId = bundle.getInt(IndustryFragment.KEY_INDUSTRY_ID, -1)
+                val industryName = bundle.getString(IndustryFragment.KEY_INDUSTRY_NAME)
+
+                if (industryId != -1 && !industryName.isNullOrEmpty()) {
+                    viewModel.updateIndustry(industryId, industryName)
+                } else {
+                    viewModel.updateIndustry(null, null)
+                }
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        viewModel.filterState.observe(viewLifecycleOwner) { filterState ->
+            filterState.salaryFrom?.let { salary ->
+                binding.enterAmount.setText(salary.toString())
+                salaryText = salary.toString()
+            }
+
+            isNoSalaryChecked = filterState.onlyWithSalary
+
+            updateButtonsVisibility()
+        }
+
+        viewModel.industryName.observe(viewLifecycleOwner) { industryName ->
+            updateIndustryUI(industryName)
+        }
+    }
+
+    private fun loadSavedFilters() {
+        val currentState = viewModel.filterState.value ?: return
+
+        currentState.salaryFrom?.let { salary ->
+            binding.enterAmount.setText(salary.toString())
+            salaryText = salary.toString()
+        }
+
+        isNoSalaryChecked = currentState.onlyWithSalary
+
+        currentState.industryId?.let { industryId ->
+            viewModel.industryName.value?.let { name ->
+                binding.industrySelected.text = name
+                binding.industrySelected.visibility = View.VISIBLE
+                binding.industryHintUnselected.visibility = View.GONE
+                binding.industryHintSelected.visibility = View.VISIBLE
+            }
+        }
+    }
+
+    private fun updateIndustryUI(industryName: String?) {
+        if (industryName != null) {
+            binding.industrySelected.text = industryName
+            binding.industrySelected.visibility = View.VISIBLE
+            binding.industryHintUnselected.visibility = View.GONE
+            binding.industryHintSelected.visibility = View.VISIBLE
+        } else {
+            binding.industrySelected.visibility = View.GONE
+            binding.industryHintUnselected.visibility = View.VISIBLE
+            binding.industryHintSelected.visibility = View.GONE
+        }
     }
 
     private fun setupToolbar() {
@@ -79,10 +152,23 @@ class FilterFragment : Fragment() {
 
     private fun setupSalaryInput() {
         binding.enterAmount.apply {
+            viewModel.filterState.value?.salaryFrom?.let { salary ->
+                setText(salary.toString())
+                salaryText = salary.toString()
+            }
+
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     clearFocusAndHideKeyboard()
                     updateSalaryLabelColor(hasFocus = false)
+                    val salaryText = text?.toString()?.trim()
+                    val salary = if (!salaryText.isNullOrEmpty()) {
+                        salaryText.toIntOrNull()
+                    } else {
+                        null
+                    }
+                    viewModel.updateSalary(salary)
+
                     true
                 } else {
                     false
@@ -91,6 +177,15 @@ class FilterFragment : Fragment() {
 
             setOnFocusChangeListener { _, hasFocus ->
                 updateSalaryLabelColor(hasFocus)
+                if (!hasFocus) {
+                    val salaryText = text?.toString()?.trim()
+                    val salary = if (!salaryText.isNullOrEmpty()) {
+                        salaryText.toIntOrNull()
+                    } else {
+                        null
+                    }
+                    viewModel.updateSalary(salary)
+                }
             }
 
             addTextChangedListener(object : TextWatcher {
@@ -99,6 +194,7 @@ class FilterFragment : Fragment() {
                     salaryText = s?.toString() ?: ""
                     updateSalaryLabelColor(hasFocus())
                 }
+
                 override fun afterTextChanged(s: Editable?) = Unit
             })
         }
@@ -107,6 +203,7 @@ class FilterFragment : Fragment() {
             binding.enterAmount.text?.clear()
             salaryText = ""
             updateSalaryLabelColor(hasFocus = false)
+            viewModel.updateSalary(null)
         }
     }
 
@@ -115,6 +212,13 @@ class FilterFragment : Fragment() {
             requireActivity().currentFocus?.let { focusedView ->
                 if (focusedView.id == R.id.enter_amount) {
                     updateSalaryLabelColor(hasFocus = false)
+                    val salaryText = binding.enterAmount.text?.toString()?.trim()
+                    val salary = if (!salaryText.isNullOrEmpty()) {
+                        salaryText.toIntOrNull()
+                    } else {
+                        null
+                    }
+                    viewModel.updateSalary(salary)
                 }
                 focusedView.clearFocus()
                 hideKeyboard(focusedView)
@@ -138,8 +242,13 @@ class FilterFragment : Fragment() {
     }
 
     private fun setupCheckbox() {
+        viewModel.filterState.value?.onlyWithSalary?.let { savedValue ->
+            isNoSalaryChecked = savedValue
+        }
+
         binding.checkboxSalary.setOnClickListener {
             isNoSalaryChecked = !isNoSalaryChecked
+            viewModel.updateOnlyWithSalary(isNoSalaryChecked)
         }
 
         binding.doNotShowWithoutSalary.setOnClickListener {
@@ -158,14 +267,26 @@ class FilterFragment : Fragment() {
     }
 
     private fun resetAllFilters() {
+        viewModel.resetFilters()
         binding.enterAmount.text?.clear()
         salaryText = ""
         isNoSalaryChecked = false
         updateSalaryLabelColor(hasFocus = false)
+
+        updateIndustryUI(null)
+
+        val result = Bundle().apply {
+            putInt(IndustryFragment.KEY_INDUSTRY_ID, -1)
+            putString(IndustryFragment.KEY_INDUSTRY_NAME, null)
+        }
+        parentFragmentManager.setFragmentResult(IndustryFragment.REQUEST_KEY_INDUSTRY, result)
     }
 
     private fun updateButtonsVisibility() {
-        val hasFilters = salaryText.isNotEmpty() || isNoSalaryChecked
+        val currentState = viewModel.filterState.value ?: FilterState()
+        val hasFilters = currentState.salaryFrom != null ||
+            currentState.onlyWithSalary ||
+            currentState.industryId != null
         binding.buttonApply.visibility = if (hasFilters) View.VISIBLE else View.GONE
         binding.buttonCancel.visibility = if (hasFilters) View.VISIBLE else View.GONE
     }
