@@ -60,7 +60,7 @@ class SearchFragment : Fragment() {
             ?.savedStateHandle
             ?.getLiveData<Boolean>("filters_applied")
             ?.observe(viewLifecycleOwner) { applied ->
-                if (applied) { viewModel.onFiltersApplied() } }
+                if (applied) viewModel.onFiltersApplied() }
     }
 
     private fun setupAdapter() {
