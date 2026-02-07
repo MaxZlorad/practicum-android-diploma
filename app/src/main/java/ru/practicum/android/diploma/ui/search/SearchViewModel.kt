@@ -131,6 +131,8 @@ class SearchViewModel(
                 onlyWithSalary = filters.onlyWithSalary
             )
 
+            setLoadingState(latestSearchText == query && currentPage == PAGES_START)
+
             searchVacanciesInteractor
                 .searchVacancies(fullFilter)
                 .collect { result ->
@@ -230,8 +232,12 @@ class SearchViewModel(
         _hasActiveFilters.value = filters.industryId != null || filters.salaryFrom != null || filters.onlyWithSalary
     }
 
-    fun reSearchIfNeeded() {
+    fun onFiltersApplied() {
+        refreshFiltersState()
+
         if (!latestSearchText.isNullOrEmpty()) {
+            resetPagination()
+            loadedPages.clear()
             search(latestSearchText!!)
         }
     }

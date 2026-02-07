@@ -54,6 +54,12 @@ class SearchFragment : Fragment() {
         setupScrollListener()
         setupUI()
         setupObservers()
+
+        findNavController()
+            .currentBackStackEntry
+            ?.savedStateHandle
+            ?.getLiveData<Boolean>("filters_applied")
+            ?.observe(viewLifecycleOwner) { applied -> if (applied) { viewModel.onFiltersApplied() } }
     }
 
     private fun setupAdapter() {
@@ -169,7 +175,6 @@ class SearchFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshFiltersState()
-        viewModel.reSearchIfNeeded()
     }
 
     private fun hideKeyboard() {
