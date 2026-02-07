@@ -19,7 +19,7 @@ import ru.practicum.android.diploma.util.Event
 class SearchViewModel(
     private val searchVacanciesInteractor: SearchVacanciesInteractor,
     private val filterInteractor: FilterInteractor
-) : ViewModel(){
+) : ViewModel() {
     private val _searchStateLiveData = MutableLiveData<SearchState>()
     val searchStateLiveData: LiveData<SearchState> = _searchStateLiveData
     private val _uiEvent = MutableLiveData<Event<UIEvent>>()
@@ -227,10 +227,7 @@ class SearchViewModel(
 
     fun refreshFiltersState() {
         val filters = filterInteractor.getFilters()
-        _hasActiveFilters.value =
-            filters.industryId != null ||
-                filters.salaryFrom != null ||
-                filters.onlyWithSalary
+        _hasActiveFilters.value = filters.industryId != null || filters.salaryFrom != null || filters.onlyWithSalary
     }
 
     fun reSearchIfNeeded() {
