@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.data.network.NetworkCodes
+import ru.practicum.android.diploma.domain.api.FilterInteractor
 import ru.practicum.android.diploma.domain.api.SearchVacanciesInteractor
 import ru.practicum.android.diploma.domain.models.Vacancy
 import ru.practicum.android.diploma.domain.models.VacancySearchFilter
@@ -15,7 +16,10 @@ import ru.practicum.android.diploma.domain.models.VacancySearchResult
 import ru.practicum.android.diploma.domain.util.ErrorType
 import ru.practicum.android.diploma.util.Event
 
-class SearchViewModel(private val searchVacanciesInteractor: SearchVacanciesInteractor) : ViewModel() {
+class SearchViewModel(
+    private val searchVacanciesInteractor: SearchVacanciesInteractor,
+    private val filterInteractor: FilterInteractor
+) : ViewModel(){
     private val _searchStateLiveData = MutableLiveData<SearchState>()
     val searchStateLiveData: LiveData<SearchState> = _searchStateLiveData
     private val _uiEvent = MutableLiveData<Event<UIEvent>>()
@@ -31,6 +35,12 @@ class SearchViewModel(private val searchVacanciesInteractor: SearchVacanciesInte
     private val loadedVacancies = mutableListOf<Vacancy>()
     private val loadedPages = mutableMapOf<String, MutableSet<Int>>()
     private var totalFoundFromApi = 0
+    private val _hasActiveFilters = MutableLiveData<Boolean>()
+    val hasActiveFilters: LiveData<Boolean> = _hasActiveFilters
+
+    init {
+        refreshFiltersState()
+    }
 
     fun searchDebounce(changedText: String) {
         debounceJob?.cancel()
@@ -58,6 +68,8 @@ class SearchViewModel(private val searchVacanciesInteractor: SearchVacanciesInte
     }
 
     private fun search(query: String) {
+        refreshFiltersState()
+
         if (query.isEmpty()) {
             handleEmptyQuery()
             return
@@ -109,10 +121,18 @@ class SearchViewModel(private val searchVacanciesInteractor: SearchVacanciesInte
         searchJob?.cancel()
         debounceJob?.cancel()
         searchJob = viewModelScope.launch {
-            setLoadingState(latestSearchText == query && currentPage == PAGES_START)
+            val filters = filterInteractor.getFilters()
+
+            val fullFilter = VacancySearchFilter(
+                text = query,
+                page = currentPage,
+                industryId = filters.industryId,
+                salaryFrom = filters.salaryFrom,
+                onlyWithSalary = filters.onlyWithSalary
+            )
 
             searchVacanciesInteractor
-                .searchVacancies(VacancySearchFilter(text = query, page = currentPage))
+                .searchVacancies(fullFilter)
                 .collect { result ->
                     handleSearchResult(result, pagesForQuery)
                     isNextPageLoading = false
@@ -203,6 +223,20 @@ class SearchViewModel(private val searchVacanciesInteractor: SearchVacanciesInte
         isPagingError = false
         hasShownPagingErrorToast = false
         loadedVacancies.clear()
+    }
+
+    fun refreshFiltersState() {
+        val filters = filterInteractor.getFilters()
+        _hasActiveFilters.value =
+            filters.industryId != null ||
+                filters.salaryFrom != null ||
+                filters.onlyWithSalary
+    }
+
+    fun reSearchIfNeeded() {
+        if (!latestSearchText.isNullOrEmpty()) {
+            search(latestSearchText!!)
+        }
     }
 
     companion object {

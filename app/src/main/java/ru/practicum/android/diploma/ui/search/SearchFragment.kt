@@ -154,6 +154,22 @@ class SearchFragment : Fragment() {
                 }
             }
         }
+
+        viewModel.hasActiveFilters.observe(viewLifecycleOwner) { hasFilters ->
+            binding.buttonFilter.setImageResource(
+                if (hasFilters) {
+                    R.drawable.ic_filter_on_24
+                } else {
+                    R.drawable.ic_filter_off_24
+                }
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshFiltersState()
+        viewModel.reSearchIfNeeded()
     }
 
     private fun hideKeyboard() {
