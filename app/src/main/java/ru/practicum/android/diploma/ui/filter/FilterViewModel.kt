@@ -1,4 +1,3 @@
-// Файл: ru.practicum.android.diploma.ui.filter.FilterViewModel
 package ru.practicum.android.diploma.ui.filter
 
 import androidx.lifecycle.LiveData
@@ -30,7 +29,6 @@ class FilterViewModel(
             industryId = savedFilters.industryId
         )
 
-        // ДОБАВЛЕНО: Загружаем имя отрасли из сохраненных фильтров
         _industryName.value = savedFilters.industryName
     }
 
@@ -40,7 +38,7 @@ class FilterViewModel(
 
         val updatedFilters = FilterParameters(
             industryId = currentState.industryId,
-            industryName = currentIndustryName, // Сохраняем текущее имя
+            industryName = currentIndustryName,
             salaryFrom = salary,
             onlyWithSalary = currentState.onlyWithSalary
         )
@@ -56,7 +54,7 @@ class FilterViewModel(
 
         val updatedFilters = FilterParameters(
             industryId = currentState.industryId,
-            industryName = currentIndustryName, // Сохраняем текущее имя
+            industryName = currentIndustryName,
             salaryFrom = currentState.salaryFrom,
             onlyWithSalary = onlyWithSalary
         )
@@ -71,7 +69,7 @@ class FilterViewModel(
 
         val updatedFilters = FilterParameters(
             industryId = industryId,
-            industryName = industryName, // Сохраняем переданное имя
+            industryName = industryName,
             salaryFrom = currentState.salaryFrom,
             onlyWithSalary = currentState.onlyWithSalary
         )

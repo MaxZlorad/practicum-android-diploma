@@ -41,7 +41,6 @@ class IndustryViewModel(
             selectedIndustryId = savedIndustryId
             selectedIndustryName = savedFilters.industryName
 
-
             if (savedIndustryId != null) {
                 selectedIndustryName = allIndustries.find { it.id == savedIndustryId }?.name
             }
