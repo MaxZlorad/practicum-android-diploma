@@ -1,5 +1,6 @@
 package ru.practicum.android.diploma.data.search
 
+import android.content.res.Resources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -16,28 +17,37 @@ import ru.practicum.android.diploma.domain.models.VacancySearchResult
 
 class SearchVacanciesRepositoryImpl(
     private val networkClient: NetworkClient,
-    private val filterRepository: FilterRepository
+    private val filterRepository: FilterRepository,
+    private val resources: Resources
 ) : SearchVacanciesRepository {
 
     override fun searchVacancies(filter: VacancySearchFilter): Flow<VacancySearchResult> = flow {
         val savedFilters = filterRepository.getFilters()
         val queryMap = mutableMapOf<String, String>().apply {
-            put("text", filter.text ?: "")
-            put("page", filter.page.toString())
+            put(KEY_TEXT, filter.text ?: EMPTY_STRING)
+            put(KEY_PAGE, filter.page.toString())
 
-            savedFilters.industryId?.let { put("industry", it.toString()) }
+            savedFilters.industryId?.let {
+                put(KEY_INDUSTRY, it.toString())
+            }
 
-            savedFilters.salaryFrom?.let { put("salary", it.toString()) }
+            savedFilters.salaryFrom?.let {
+                put(KEY_SALARY, it.toString())
+            }
 
-            if (savedFilters.onlyWithSalary) put("only_with_salary", "true")
+            if (savedFilters.onlyWithSalary) {
+                put(KEY_ONLY_WITH_SALARY, VALUE_TRUE)
+            }
         }
         val response = networkClient.doRequest(VacancyRequest(queryMap))
         when (response.resultCode) {
             NetworkCodes.SUCCESS_CODE -> {
                 val vacanciesResponse = response as VacancyResponse
                 val vacancies: List<Vacancy> =
-                    VacancyDtoMapper.mapList(vacanciesResponse.vacancies)
-
+                    VacancyDtoMapper.mapList(
+                        vacanciesResponse.vacancies,
+                        resources
+                    )
                 emit(
                     VacancySearchResult(
                         totalFound = vacanciesResponse.found,
@@ -60,4 +70,14 @@ class SearchVacanciesRepositoryImpl(
             }
         }
     }.flowOn(Dispatchers.IO)
+
+    companion object {
+        private const val KEY_TEXT = "text"
+        private const val KEY_PAGE = "page"
+        private const val KEY_INDUSTRY = "industry"
+        private const val KEY_SALARY = "salary"
+        private const val KEY_ONLY_WITH_SALARY = "only_with_salary"
+        private const val VALUE_TRUE = "true"
+        private const val EMPTY_STRING = ""
+    }
 }

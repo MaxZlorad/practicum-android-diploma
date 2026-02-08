@@ -33,7 +33,7 @@ class VacancyDetailsRepositoryImpl(
         return when (response.resultCode) {
             NetworkCodes.SUCCESS_CODE -> {
                 val detailsResponce = response as VacancyDetailsResponse
-                val vacancy = VacancyDtoMapper.map(detailsResponce.vacancy)
+                val vacancy = VacancyDtoMapper.map(detailsResponce.vacancy, context.resources)
                 VacancyDetailsSearchResult(vacancy, null)
             }
 

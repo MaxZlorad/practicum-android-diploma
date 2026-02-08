@@ -10,14 +10,9 @@ class SearchVacanciesInteractorImpl(private val repository: SearchVacanciesRepos
     SearchVacanciesInteractor {
     override fun searchVacancies(filters: VacancySearchFilter): Flow<VacancySearchResult> {
         val sanitizedFilters = filters.copy(
-            text = filters.text?.let { sanitizeText(it) }
+            text = filters.text?.let { it }
         )
         return repository.searchVacancies(sanitizedFilters)
     }
 
-    private fun sanitizeText(text: String): String {
-        return text.replace(Regex("[^\\p{L}\\p{N}.&\\-'/ ]+"), "")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-    }
 }
