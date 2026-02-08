@@ -8,11 +8,11 @@ import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.domain.api.FavoritesInteractor
 import ru.practicum.android.diploma.domain.models.Vacancy
 
-sealed class FavoritesState {
-    object Loading : FavoritesState()
-    data class Content(val vacancies: List<Vacancy>) : FavoritesState()
-    object Empty : FavoritesState()
-    object Error : FavoritesState()
+sealed interface FavoritesState {
+    object Loading : FavoritesState
+    data class Content(val vacancies: List<Vacancy>) : FavoritesState
+    object Empty : FavoritesState
+    object Error : FavoritesState
 }
 
 class FavoritesViewModel(

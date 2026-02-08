@@ -22,6 +22,8 @@ class FavoritesFragment : Fragment() {
 
     private val viewModel: FavoritesViewModel by viewModel()
 
+    private var isFirstLoad = true
+
     private val adapter: SearchAdapter by lazy {
         val onVacancyClick = debounce<Vacancy>(
             delayMillis = 500L,
@@ -49,6 +51,10 @@ class FavoritesFragment : Fragment() {
         setupUI()
         setupAdapter()
         setupObservers()
+
+        if (isFirstLoad) {
+            viewModel.refresh()
+        }
     }
 
     private fun setupUI() {
@@ -121,7 +127,9 @@ class FavoritesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.refresh()
+        if (isFirstLoad) {
+            isFirstLoad = false
+        }
     }
 
     override fun onDestroyView() {
