@@ -13,7 +13,7 @@ import java.util.Locale
 
 class IndustryViewModel(
     private val industryInteractor: IndustryInteractor,
-    private val filter: FilterInteractor
+    private val filterInteractor: FilterInteractor
 ) : ViewModel() {
     private val allIndustries = mutableListOf<Industry>()
     private var selectedIndustryId: Int? = null
@@ -22,6 +22,7 @@ class IndustryViewModel(
     val stateLiveData: LiveData<IndustryState> = _stateLiveData
     private val _isButtonEnabled = MutableLiveData(false)
     val isButtonEnabled: LiveData<Boolean> = _isButtonEnabled
+    private var selectedIndustryName: String? = null
     fun loadIndustries() {
         _stateLiveData.value = IndustryState.Loading
 
@@ -35,14 +36,21 @@ class IndustryViewModel(
 
             allIndustries.addAll(data)
 
-            savedIndustryId = filter.getFilters().industryId
+            val savedFilters = filterInteractor.getFilters()
+            savedIndustryId = savedFilters.industryId
             selectedIndustryId = savedIndustryId
+            selectedIndustryName = savedFilters.industryName
+
+            if (savedIndustryId != null) {
+                selectedIndustryName = allIndustries.find { it.id == savedIndustryId }?.name
+            }
 
             if (savedIndustryId != null &&
                 allIndustries.none { it.id == savedIndustryId }
             ) {
                 savedIndustryId = null
                 selectedIndustryId = null
+                selectedIndustryName = null
             }
 
             when {
@@ -76,9 +84,11 @@ class IndustryViewModel(
     }
 
     fun getSelectedIndustryId(): Int? = selectedIndustryId
+    fun getSelectedIndustryName(): String? = selectedIndustryName
 
     fun onIndustrySelected(industryId: Int) {
         selectedIndustryId = industryId
+        selectedIndustryName = allIndustries.find { it.id == industryId }?.name
         updateButtonEnabled()
 
         (_stateLiveData.value as? IndustryState.Content)?.let {
@@ -93,13 +103,20 @@ class IndustryViewModel(
 
     fun onApplyClicked() {
         val industryToSave = selectedIndustryId ?: savedIndustryId ?: return
-
-        filter.saveFilters(
-            FilterParameters(industryId = industryToSave)
+        val industryNameToSave = selectedIndustryName ?: allIndustries.find { it.id == industryToSave }?.name
+        val currentFilters = filterInteractor.getFilters()
+        val updatedFilters = FilterParameters(
+            industryId = industryToSave,
+            industryName = industryNameToSave,
+            salaryFrom = currentFilters.salaryFrom,
+            onlyWithSalary = currentFilters.onlyWithSalary
         )
+
+        filterInteractor.saveFilters(updatedFilters)
 
         savedIndustryId = industryToSave
         selectedIndustryId = industryToSave
+        selectedIndustryName = industryNameToSave
         updateButtonEnabled()
     }
 }

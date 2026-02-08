@@ -138,6 +138,14 @@ class IndustryFragment : Fragment() {
     private fun setupButtons() {
         binding.btnApply.setOnClickListener {
             viewModel.onApplyClicked()
+            val selectedIndustryName = viewModel.getSelectedIndustryName()
+            val selectedIndustryId = viewModel.getSelectedIndustryId()
+            val result = Bundle().apply {
+                putInt(KEY_INDUSTRY_ID, selectedIndustryId ?: -1)
+                putString(KEY_INDUSTRY_NAME, selectedIndustryName)
+            }
+
+            parentFragmentManager.setFragmentResult(REQUEST_KEY_INDUSTRY, result)
             findNavController().popBackStack()
         }
     }
@@ -193,5 +201,8 @@ class IndustryFragment : Fragment() {
 
     companion object {
         private const val DEBOUNCE_DELAY = 1000L
+        const val REQUEST_KEY_INDUSTRY = "industry_request_key"
+        const val KEY_INDUSTRY_ID = "industry_id"
+        const val KEY_INDUSTRY_NAME = "industry_name"
     }
 }
