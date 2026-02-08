@@ -258,6 +258,10 @@ class FilterFragment : Fragment() {
 
     private fun setupButtons() {
         binding.buttonApply.setOnClickListener {
+            findNavController().previousBackStackEntry
+                ?.savedStateHandle
+                ?.set("filters_applied", true)
+
             findNavController().popBackStack()
         }
 
