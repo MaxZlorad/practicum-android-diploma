@@ -18,7 +18,7 @@ class FilterFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: FilterViewModel by viewModel()
 
-    private lateinit var salaryInputHandler: SalaryInputHandler
+    private var salaryInputHandler: SalaryInputHandler? = null
 
 
     private var isNoSalaryChecked: Boolean = false
@@ -142,14 +142,14 @@ class FilterFragment : Fragment() {
     }
 
     private fun setupSalaryInput() {
-        salaryInputHandler.setupSalaryInput()
+        salaryInputHandler?.setupSalaryInput()
     }
 
     private fun setupClickOutsideListener() {
         binding.root.setOnClickListener {
             requireActivity().currentFocus?.let { focusedView ->
                 if (focusedView.id == R.id.enter_amount) {
-                    salaryInputHandler.updateSalaryLabelColor(hasFocus = false)
+                    salaryInputHandler?.updateSalaryLabelColor(hasFocus = false)
                     handleSalaryInput()
                 }
                 focusedView.clearFocus()
@@ -196,7 +196,7 @@ class FilterFragment : Fragment() {
         viewModel.resetFilters()
         binding.enterAmount.text?.clear()
         isNoSalaryChecked = false
-        salaryInputHandler.updateSalaryLabelColor(hasFocus = false)
+        salaryInputHandler?.updateSalaryLabelColor(hasFocus = false)
 
         updateIndustryUI(null)
 
@@ -233,6 +233,7 @@ class FilterFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        salaryInputHandler = null
         _binding = null
     }
 }
