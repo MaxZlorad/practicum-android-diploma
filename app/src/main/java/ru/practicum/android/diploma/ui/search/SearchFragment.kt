@@ -55,12 +55,17 @@ class SearchFragment : Fragment() {
         setupUI()
         setupObservers()
 
-        findNavController()
+        val savedStateHandle = findNavController()
             .currentBackStackEntry
             ?.savedStateHandle
-            ?.getLiveData<Boolean>("filters_applied")
+
+        savedStateHandle
+            ?.getLiveData<Boolean>(FILTERS_APPLIED_KEY)
             ?.observe(viewLifecycleOwner) { applied ->
-                if (applied) viewModel.onFiltersApplied() }
+                if (applied)
+                    viewModel.onFiltersApplied()
+                    savedStateHandle.remove<Boolean>(FILTERS_APPLIED_KEY)
+            }
     }
 
     private fun setupAdapter() {
@@ -191,5 +196,6 @@ class SearchFragment : Fragment() {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 500L
+        private const val FILTERS_APPLIED_KEY = "filters_applied"
     }
 }
