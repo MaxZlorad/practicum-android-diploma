@@ -62,9 +62,10 @@ class SearchFragment : Fragment() {
         savedStateHandle
             ?.getLiveData<Boolean>(FILTERS_APPLIED_KEY)
             ?.observe(viewLifecycleOwner) { applied ->
-                if (applied)
+                if (applied) {
                     viewModel.onFiltersApplied()
                     savedStateHandle.remove<Boolean>(FILTERS_APPLIED_KEY)
+                }
             }
     }
 
