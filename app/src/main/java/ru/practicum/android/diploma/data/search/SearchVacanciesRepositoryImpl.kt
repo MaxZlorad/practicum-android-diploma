@@ -22,8 +22,13 @@ class SearchVacanciesRepositoryImpl(
 ) : SearchVacanciesRepository {
 
     override fun searchVacancies(filter: VacancySearchFilter): Flow<VacancySearchResult> = flow {
+        val queryMap = buildQueryMap(filter)
+        emit(executeSearch(queryMap))
+    }.flowOn(Dispatchers.IO)
+
+    private fun buildQueryMap(filter: VacancySearchFilter): Map<String, String> {
         val savedFilters = filterRepository.getFilters()
-        val queryMap = mutableMapOf<String, String>().apply {
+        return mutableMapOf<String, String>().apply {
             put(KEY_TEXT, filter.text ?: EMPTY_STRING)
             put(KEY_PAGE, filter.page.toString())
 
@@ -39,8 +44,11 @@ class SearchVacanciesRepositoryImpl(
                 put(KEY_ONLY_WITH_SALARY, VALUE_TRUE)
             }
         }
+    }
+
+    private suspend fun executeSearch(queryMap: Map<String, String>): VacancySearchResult {
         val response = networkClient.doRequest(VacancyRequest(queryMap))
-        when (response.resultCode) {
+        return when (response.resultCode) {
             NetworkCodes.SUCCESS_CODE -> {
                 val vacanciesResponse = response as VacancyResponse
                 val vacancies: List<Vacancy> =
@@ -48,28 +56,24 @@ class SearchVacanciesRepositoryImpl(
                         vacanciesResponse.vacancies,
                         resources
                     )
-                emit(
-                    VacancySearchResult(
-                        totalFound = vacanciesResponse.found,
-                        totalPages = vacanciesResponse.pages,
-                        vacancies = vacancies,
-                        errorCode = NetworkCodes.SUCCESS_CODE
-                    )
+                VacancySearchResult(
+                    totalFound = vacanciesResponse.found,
+                    totalPages = vacanciesResponse.pages,
+                    vacancies = vacancies,
+                    errorCode = NetworkCodes.SUCCESS_CODE
                 )
             }
 
             else -> {
-                emit(
-                    VacancySearchResult(
-                        totalFound = 0,
-                        totalPages = 0,
-                        vacancies = emptyList(),
-                        errorCode = response.resultCode
-                    )
+                VacancySearchResult(
+                    totalFound = 0,
+                    totalPages = 0,
+                    vacancies = emptyList(),
+                    errorCode = response.resultCode
                 )
             }
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
     companion object {
         private const val KEY_TEXT = "text"
