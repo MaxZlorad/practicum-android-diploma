@@ -22,8 +22,6 @@ class FavoritesFragment : Fragment() {
 
     private val viewModel: FavoritesViewModel by viewModel()
 
-    private var isFirstLoad = true
-
     private val adapter: SearchAdapter by lazy {
         val onVacancyClick = debounce<Vacancy>(
             delayMillis = 500L,
@@ -52,9 +50,8 @@ class FavoritesFragment : Fragment() {
         setupAdapter()
         setupObservers()
 
-        if (isFirstLoad) {
-            viewModel.refresh()
-        }
+        // Загружаем данные при создании view
+        viewModel.refresh()
     }
 
     private fun setupUI() {
@@ -97,9 +94,12 @@ class FavoritesFragment : Fragment() {
     }
 
     private fun showLoading() {
-        binding.placeholderFavorites.visibility = View.GONE
-        binding.textImageCaptionFavorites.visibility = View.GONE
-        binding.recyclerViewFavorites.visibility = View.GONE
+        // Показываем Loading только если сейчас не отображаются данные
+        if (binding.recyclerViewFavorites.visibility != View.VISIBLE) {
+            binding.placeholderFavorites.visibility = View.GONE
+            binding.textImageCaptionFavorites.visibility = View.GONE
+            binding.recyclerViewFavorites.visibility = View.GONE
+        }
     }
 
     private fun showContent(vacancies: List<Vacancy>) {
@@ -127,9 +127,8 @@ class FavoritesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (isFirstLoad) {
-            isFirstLoad = false
-        }
+        // Всегда обновляем данные при возвращении на экран
+        viewModel.refresh()
     }
 
     override fun onDestroyView() {
