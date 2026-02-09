@@ -20,7 +20,6 @@ class FilterFragment : Fragment() {
 
     private var salaryInputHandler: SalaryInputHandler? = null
 
-
     private var isNoSalaryChecked: Boolean = false
         set(value) {
             field = value
