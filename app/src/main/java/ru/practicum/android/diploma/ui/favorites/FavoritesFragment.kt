@@ -50,7 +50,6 @@ class FavoritesFragment : Fragment() {
         setupAdapter()
         setupObservers()
 
-        // Загружаем данные при создании view
         viewModel.refresh()
     }
 
@@ -94,7 +93,6 @@ class FavoritesFragment : Fragment() {
     }
 
     private fun showLoading() {
-        // Показываем Loading только если сейчас не отображаются данные
         if (binding.recyclerViewFavorites.visibility != View.VISIBLE) {
             binding.placeholderFavorites.visibility = View.GONE
             binding.textImageCaptionFavorites.visibility = View.GONE
@@ -127,7 +125,6 @@ class FavoritesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Всегда обновляем данные при возвращении на экран
         viewModel.refresh()
     }
 
