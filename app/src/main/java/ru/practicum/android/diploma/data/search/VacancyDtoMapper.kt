@@ -68,6 +68,8 @@ object VacancyDtoMapper {
         val from = salary.from?.let { formatNumber(it) }
         val to = salary.to?.let { formatNumber(it) }
 
+        val hasAmount = from != null || to != null
+
         val base = when {
             from != null && to != null ->
                 resources.getString(R.string.salary_from_to, from, to)
@@ -82,9 +84,11 @@ object VacancyDtoMapper {
                 resources.getString(R.string.salary_not_specified)
         }
 
-        return salary.currency?.let { currency ->
-            "$base ${getCurrencySymbol(currency)}"
-        } ?: base
+        return if (hasAmount && salary.currency != null) {
+            "$base ${getCurrencySymbol(salary.currency)}"
+        } else {
+            base
+        }
     }
 
     fun formatName(name: String, city: String?, areaName: String): String {

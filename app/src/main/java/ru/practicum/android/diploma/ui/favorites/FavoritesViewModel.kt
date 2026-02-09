@@ -22,13 +22,13 @@ class FavoritesViewModel(
     private val _state = MutableLiveData<FavoritesState>()
     val state: LiveData<FavoritesState> = _state
 
-    init {
-        loadFavorites()
-    }
+    /*    init {
+            loadFavorites()
+        }*/
 
     fun loadFavorites() {
         viewModelScope.launch {
-            _state.value = FavoritesState.Loading
+            // _state.value = FavoritesState.Loading
             try {
                 val favorites = favoritesInteractor.getAllFavorites()
                 _state.value = if (favorites.isEmpty()) {
