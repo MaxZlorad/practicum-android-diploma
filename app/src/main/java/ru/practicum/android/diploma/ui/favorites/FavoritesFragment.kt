@@ -48,8 +48,8 @@ class FavoritesFragment : Fragment() {
 
         setupUI()
         setupAdapter()
+        showLoading()
         setupObservers()
-
         viewModel.refresh()
     }
 
