@@ -8,11 +8,11 @@ import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.domain.api.FavoritesInteractor
 import ru.practicum.android.diploma.domain.models.Vacancy
 
-sealed class FavoritesState {
-    object Loading : FavoritesState()
-    data class Content(val vacancies: List<Vacancy>) : FavoritesState()
-    object Empty : FavoritesState()
-    object Error : FavoritesState()
+sealed interface FavoritesState {
+    object Loading : FavoritesState
+    data class Content(val vacancies: List<Vacancy>) : FavoritesState
+    object Empty : FavoritesState
+    object Error : FavoritesState
 }
 
 class FavoritesViewModel(
@@ -22,13 +22,13 @@ class FavoritesViewModel(
     private val _state = MutableLiveData<FavoritesState>()
     val state: LiveData<FavoritesState> = _state
 
-    init {
-        loadFavorites()
-    }
+    /*    init {
+            loadFavorites()
+        }*/
 
     fun loadFavorites() {
         viewModelScope.launch {
-            _state.value = FavoritesState.Loading
+            // _state.value = FavoritesState.Loading
             try {
                 val favorites = favoritesInteractor.getAllFavorites()
                 _state.value = if (favorites.isEmpty()) {

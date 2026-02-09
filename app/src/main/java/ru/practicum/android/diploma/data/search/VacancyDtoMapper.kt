@@ -1,13 +1,25 @@
 package ru.practicum.android.diploma.data.search
 
+import android.content.res.Resources
+import ru.practicum.android.diploma.R
 import ru.practicum.android.diploma.data.dto.PhoneDto
 import ru.practicum.android.diploma.data.dto.Salary
 import ru.practicum.android.diploma.data.dto.VacancyDto
+import ru.practicum.android.diploma.data.search.CurrencySymbols.AZN
+import ru.practicum.android.diploma.data.search.CurrencySymbols.BYN
+import ru.practicum.android.diploma.data.search.CurrencySymbols.EUR
+import ru.practicum.android.diploma.data.search.CurrencySymbols.GEL
+import ru.practicum.android.diploma.data.search.CurrencySymbols.KGT
+import ru.practicum.android.diploma.data.search.CurrencySymbols.KZT
+import ru.practicum.android.diploma.data.search.CurrencySymbols.RUB
+import ru.practicum.android.diploma.data.search.CurrencySymbols.UAH
+import ru.practicum.android.diploma.data.search.CurrencySymbols.USD
+import ru.practicum.android.diploma.data.search.CurrencySymbols.UZS
 import ru.practicum.android.diploma.domain.models.Vacancy
 import java.util.Locale
 
 object VacancyDtoMapper {
-    fun map(dto: VacancyDto): Vacancy {
+    fun map(dto: VacancyDto, resources: Resources): Vacancy {
         val displayName = formatName(dto.name, dto.address?.city, dto.area.name)
 
         return Vacancy(
@@ -24,7 +36,7 @@ object VacancyDtoMapper {
             salaryFrom = dto.salary?.from,
             salaryTo = dto.salary?.to,
             currency = dto.salary?.currency,
-            salaryTitle = formatSalary(dto.salary),
+            salaryTitle = formatSalary(dto.salary, resources),
             city = dto.address?.city,
             street = dto.address?.street,
             building = dto.address?.building,
@@ -38,39 +50,44 @@ object VacancyDtoMapper {
         )
     }
 
-    fun mapList(dtoList: List<VacancyDto>?): List<Vacancy> {
-        return dtoList?.map { map(it) } ?: emptyList()
+    fun mapList(
+        dtoList: List<VacancyDto>?,
+        resources: Resources
+    ): List<Vacancy> {
+        return dtoList?.map { map(it, resources) } ?: emptyList()
     }
 
-    fun formatSalary(salary: Salary?): String {
-        return if (salary != null) {
-            buildString {
-                val formattedFrom = salary.from?.let { formatNumber(it) }
-                val formattedTo = salary.to?.let { formatNumber(it) }
+    fun formatSalary(
+        salary: Salary?,
+        resources: Resources
+    ): String {
+        if (salary == null) {
+            return resources.getString(R.string.salary_not_specified)
+        }
 
-                when {
-                    formattedFrom != null && formattedTo != null ->
-                        append("От $formattedFrom до $formattedTo")
+        val from = salary.from?.let { formatNumber(it) }
+        val to = salary.to?.let { formatNumber(it) }
 
-                    formattedFrom != null ->
-                        append("От $formattedFrom")
+        val hasAmount = from != null || to != null
 
-                    formattedTo != null ->
-                        append("До $formattedTo")
+        val base = when {
+            from != null && to != null ->
+                resources.getString(R.string.salary_from_to, from, to)
 
-                    else ->
-                        return "Зарплата не указана"
-                }
+            from != null ->
+                resources.getString(R.string.salary_from, from)
 
-                salary.currency?.let { currency ->
-                    if (currency.isNotBlank()) {
-                        append(" ")
-                        append(getCurrencySymbol(currency))
-                    }
-                }
-            }
+            to != null ->
+                resources.getString(R.string.salary_to, to)
+
+            else ->
+                resources.getString(R.string.salary_not_specified)
+        }
+
+        return if (hasAmount && salary.currency != null) {
+            "$base ${getCurrencySymbol(salary.currency)}"
         } else {
-            "Зарплата не указана"
+            base
         }
     }
 
@@ -85,16 +102,16 @@ object VacancyDtoMapper {
 
     private fun getCurrencySymbol(currencyCode: String): String {
         return when (currencyCode.uppercase()) {
-            "RUR", "RUB" -> "₽"
-            "BYR" -> "Br"
-            "USD" -> "$"
-            "EUR" -> "€"
-            "KZT" -> "₸"
-            "UAH" -> "₴"
-            "AZN" -> "₼"
-            "UZS" -> "сўм"
-            "GEL" -> "₾"
-            "KGT" -> "сом"
+            "RUR", "RUB" -> RUB
+            "BYR" -> BYN
+            "USD" -> USD
+            "EUR" -> EUR
+            "KZT" -> KZT
+            "UAH" -> UAH
+            "AZN" -> AZN
+            "UZS" -> UZS
+            "GEL" -> GEL
+            "KGT" -> KGT
             else -> currencyCode
         }
     }

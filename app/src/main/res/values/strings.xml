@@ -58,4 +58,8 @@
     <string name="duties">Обязанности</string>
     <string name="requirements">Требования</string>
     <string name="conditions">Условия</string>
+
+    <string name="salary_from_to">От %1$s до %2$s</string>
+    <string name="salary_from">От %1$s</string>
+    <string name="salary_to">До %1$s</string>
 </resources>

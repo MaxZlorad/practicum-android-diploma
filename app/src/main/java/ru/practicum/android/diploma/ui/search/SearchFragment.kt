@@ -54,6 +54,19 @@ class SearchFragment : Fragment() {
         setupScrollListener()
         setupUI()
         setupObservers()
+
+        val savedStateHandle = findNavController()
+            .currentBackStackEntry
+            ?.savedStateHandle
+
+        savedStateHandle
+            ?.getLiveData<Boolean>(FILTERS_APPLIED_KEY)
+            ?.observe(viewLifecycleOwner) { applied ->
+                if (applied) {
+                    viewModel.onFiltersApplied()
+                    savedStateHandle.remove<Boolean>(FILTERS_APPLIED_KEY)
+                }
+            }
     }
 
     private fun setupAdapter() {
@@ -154,6 +167,21 @@ class SearchFragment : Fragment() {
                 }
             }
         }
+
+        viewModel.hasActiveFilters.observe(viewLifecycleOwner) { hasFilters ->
+            binding.buttonFilter.setImageResource(
+                if (hasFilters) {
+                    R.drawable.ic_filter_on_24
+                } else {
+                    R.drawable.ic_filter_off_24
+                }
+            )
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshFiltersState()
     }
 
     private fun hideKeyboard() {
@@ -169,5 +197,6 @@ class SearchFragment : Fragment() {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 500L
+        private const val FILTERS_APPLIED_KEY = "filters_applied"
     }
 }

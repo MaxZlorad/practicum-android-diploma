@@ -49,6 +49,7 @@ class FavoritesFragment : Fragment() {
         setupUI()
         setupAdapter()
         setupObservers()
+        viewModel.refresh()
     }
 
     private fun setupUI() {
@@ -91,9 +92,11 @@ class FavoritesFragment : Fragment() {
     }
 
     private fun showLoading() {
-        binding.placeholderFavorites.visibility = View.GONE
-        binding.textImageCaptionFavorites.visibility = View.GONE
-        binding.recyclerViewFavorites.visibility = View.GONE
+        if (binding.recyclerViewFavorites.visibility != View.VISIBLE) {
+            binding.placeholderFavorites.visibility = View.GONE
+            binding.textImageCaptionFavorites.visibility = View.GONE
+            binding.recyclerViewFavorites.visibility = View.GONE
+        }
     }
 
     private fun showContent(vacancies: List<Vacancy>) {
