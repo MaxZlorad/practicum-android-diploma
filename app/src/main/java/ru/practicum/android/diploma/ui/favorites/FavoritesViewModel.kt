@@ -22,9 +22,9 @@ class FavoritesViewModel(
     private val _state = MutableLiveData<FavoritesState>()
     val state: LiveData<FavoritesState> = _state
 
-    init {
-        loadFavorites()
-    }
+    /*    init {
+            loadFavorites()
+        }*/
 
     fun loadFavorites() {
         viewModelScope.launch {
