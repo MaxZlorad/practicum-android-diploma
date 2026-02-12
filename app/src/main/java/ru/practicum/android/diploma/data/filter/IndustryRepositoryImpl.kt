@@ -8,6 +8,7 @@ import ru.practicum.android.diploma.domain.api.IndustryRepository
 import ru.practicum.android.diploma.domain.models.Industry
 import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import ru.practicum.android.diploma.domain.models.IndustrySearchResult
+import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 
 class IndustryRepositoryImpl(private val networkClient: NetworkClient) : IndustryRepository {
@@ -16,9 +17,8 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
             val response = networkClient.doRequest(IndustryRequest())
 
             when (response.resultCode) {
-                NetworkCodes.SERVER_ERROR_CODE -> {
+                NetworkCodes.SERVER_ERROR_CODE ->
                     IndustrySearchResult(null, IndustrySearchError.Server)
-                }
 
                 NetworkCodes.SUCCESS_CODE -> {
                     val industryResponse = response as IndustryResponse
@@ -28,13 +28,13 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
                     IndustrySearchResult(data, null)
                 }
 
-                else -> {
+                else ->
                     IndustrySearchResult(null, IndustrySearchError.Network)
-                }
             }
+
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             IndustrySearchResult(null, IndustrySearchError.Network)
         }
     }

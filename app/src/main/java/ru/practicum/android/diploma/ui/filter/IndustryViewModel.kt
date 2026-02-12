@@ -27,19 +27,13 @@ class IndustryViewModel(
     private var loadJob: Job? = null
     fun loadIndustries() {
         _stateLiveData.value = IndustryState.Loading
-
         loadJob?.cancel()
-
         loadJob = viewModelScope.launch {
-
             allIndustries.clear()
-
             val response = industryInteractor.getIndustries()
-
             val data = response.data
                 ?.sortedBy { it.name.lowercase(Locale.getDefault()) }
                 ?: emptyList()
-
             allIndustries.addAll(data)
 
             val savedFilters = filterInteractor.getFilters()
@@ -65,10 +59,8 @@ class IndustryViewModel(
                     _stateLiveData.postValue(
                         IndustryState.Error(response.error)
                     )
-
                 data.isEmpty() ->
                     _stateLiveData.postValue(IndustryState.Empty)
-
                 else ->
                     _stateLiveData.postValue(
                         IndustryState.Content(data)
