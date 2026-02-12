@@ -8,34 +8,28 @@ import ru.practicum.android.diploma.domain.api.IndustryRepository
 import ru.practicum.android.diploma.domain.models.Industry
 import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import ru.practicum.android.diploma.domain.models.IndustrySearchResult
-import java.io.IOException
-import kotlin.coroutines.cancellation.CancellationException
 
 class IndustryRepositoryImpl(private val networkClient: NetworkClient) : IndustryRepository {
     override suspend fun getIndustries(): IndustrySearchResult {
-        return try {
-            val response = networkClient.doRequest(IndustryRequest())
-
-            when (response.resultCode) {
-                NetworkCodes.SERVER_ERROR_CODE ->
-                    IndustrySearchResult(null, IndustrySearchError.Server)
-
-                NetworkCodes.SUCCESS_CODE -> {
-                    val industryResponse = response as IndustryResponse
-                    val data = industryResponse.industries.map {
-                        Industry(it.id, it.name)
-                    }
-                    IndustrySearchResult(data, null)
+        val response = networkClient.doRequest(IndustryRequest())
+        return when (response.resultCode) {
+            NetworkCodes.SUCCESS_CODE -> {
+                val industryResponse = response as IndustryResponse
+                val data = industryResponse.industries.map {
+                    Industry(it.id, it.name)
                 }
-
-                else ->
-                    IndustrySearchResult(null, IndustrySearchError.Network)
+                IndustrySearchResult(data, null)
             }
 
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: IOException) {
-            IndustrySearchResult(null, IndustrySearchError.Network)
+            NetworkCodes.SERVER_ERROR_CODE ->
+                IndustrySearchResult(null, IndustrySearchError.Server)
+
+            NetworkCodes.NO_NETWORK_CODE,
+            NetworkCodes.TIMEOUT_CODE ->
+                IndustrySearchResult(null, IndustrySearchError.Network)
+
+            else ->
+                IndustrySearchResult(null, IndustrySearchError.Network)
         }
     }
 }
