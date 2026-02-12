@@ -8,11 +8,13 @@ import ru.practicum.android.diploma.domain.api.IndustryRepository
 import ru.practicum.android.diploma.domain.models.Industry
 import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import ru.practicum.android.diploma.domain.models.IndustrySearchResult
+import kotlin.coroutines.cancellation.CancellationException
 
 class IndustryRepositoryImpl(private val networkClient: NetworkClient) : IndustryRepository {
     override suspend fun getIndustries(): IndustrySearchResult {
         return try {
             val response = networkClient.doRequest(IndustryRequest())
+
             when (response.resultCode) {
                 NetworkCodes.SERVER_ERROR_CODE -> {
                     IndustrySearchResult(null, IndustrySearchError.Server)
@@ -30,7 +32,9 @@ class IndustryRepositoryImpl(private val networkClient: NetworkClient) : Industr
                     IndustrySearchResult(null, IndustrySearchError.Network)
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             IndustrySearchResult(null, IndustrySearchError.Network)
         }
     }
