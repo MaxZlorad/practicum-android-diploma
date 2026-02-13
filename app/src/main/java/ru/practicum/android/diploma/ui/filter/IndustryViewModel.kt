@@ -10,6 +10,7 @@ import ru.practicum.android.diploma.domain.api.FilterInteractor
 import ru.practicum.android.diploma.domain.api.IndustryInteractor
 import ru.practicum.android.diploma.domain.models.FilterParameters
 import ru.practicum.android.diploma.domain.models.Industry
+import ru.practicum.android.diploma.domain.models.IndustrySearchError
 import java.util.Locale
 
 class IndustryViewModel(
@@ -28,46 +29,58 @@ class IndustryViewModel(
     fun loadIndustries() {
         _stateLiveData.value = IndustryState.Loading
         loadJob?.cancel()
+
         loadJob = viewModelScope.launch {
             allIndustries.clear()
+
             val response = industryInteractor.getIndustries()
             val data = response.data
                 ?.sortedBy { it.name.lowercase(Locale.getDefault()) }
                 ?: emptyList()
+
             allIndustries.addAll(data)
 
-            val savedFilters = filterInteractor.getFilters()
-            savedIndustryId = savedFilters.industryId
-            selectedIndustryId = savedIndustryId
-            selectedIndustryName = savedFilters.industryName
-
-            if (savedIndustryId != null) {
-                selectedIndustryName =
-                    allIndustries.find { it.id == savedIndustryId }?.name
-            }
-
-            if (savedIndustryId != null &&
-                allIndustries.none { it.id == savedIndustryId }
-            ) {
-                savedIndustryId = null
-                selectedIndustryId = null
-                selectedIndustryName = null
-            }
-
-            when {
-                response.error != null ->
-                    _stateLiveData.postValue(
-                        IndustryState.Error(response.error)
-                    )
-                data.isEmpty() ->
-                    _stateLiveData.postValue(IndustryState.Empty)
-                else ->
-                    _stateLiveData.postValue(
-                        IndustryState.Content(data)
-                    )
-            }
-
+            restoreSavedSelection()
+            validateSavedIndustry(data)
+            updateState(response.error, data)
             updateButtonEnabled()
+        }
+    }
+
+    private fun restoreSavedSelection() {
+        val savedFilters = filterInteractor.getFilters()
+        savedIndustryId = savedFilters.industryId
+        selectedIndustryId = savedIndustryId
+        selectedIndustryName = savedFilters.industryName
+
+        if (savedIndustryId != null) {
+            selectedIndustryName =
+                allIndustries.find { it.id == savedIndustryId }?.name
+        }
+    }
+
+    private fun validateSavedIndustry(data: List<Industry>) {
+        if (savedIndustryId != null &&
+            data.none { it.id == savedIndustryId }
+        ) {
+            savedIndustryId = null
+            selectedIndustryId = null
+            selectedIndustryName = null
+        }
+    }
+
+    private fun updateState(error: IndustrySearchError?, data: List<Industry>) {
+        when {
+            error != null ->
+                _stateLiveData.postValue(IndustryState.Error(error))
+
+            data.isEmpty() ->
+                _stateLiveData.postValue(IndustryState.Empty)
+
+            else ->
+                _stateLiveData.postValue(
+                    IndustryState.Content(data)
+                )
         }
     }
 
@@ -123,6 +136,7 @@ class IndustryViewModel(
         selectedIndustryName = industryNameToSave
         updateButtonEnabled()
     }
+
     override fun onCleared() {
         super.onCleared()
         loadJob?.cancel()

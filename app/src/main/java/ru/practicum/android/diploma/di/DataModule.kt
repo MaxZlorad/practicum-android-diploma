@@ -12,6 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import ru.practicum.android.diploma.BuildConfig
 import ru.practicum.android.diploma.data.db.AppDatabase
 import ru.practicum.android.diploma.data.db.VacancyDao
+import ru.practicum.android.diploma.data.filter.FilterStorage
 import ru.practicum.android.diploma.data.network.NetworkClient
 import ru.practicum.android.diploma.data.network.RetrofitNetworkClient
 import ru.practicum.android.diploma.data.network.VacancyApi
@@ -62,6 +63,9 @@ val dataModule = module {
     }
 
     single<SharedPreferences> {
-        androidContext().getSharedPreferences("app_pref", Context.MODE_PRIVATE)
+        androidContext().getSharedPreferences(
+            FilterStorage.FILTER_PREFS_NAME,
+            Context.MODE_PRIVATE
+        )
     }
 }

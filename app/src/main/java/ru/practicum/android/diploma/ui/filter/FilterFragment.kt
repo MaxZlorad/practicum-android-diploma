@@ -22,11 +22,14 @@ class FilterFragment : Fragment() {
 
     private var isNoSalaryChecked: Boolean = false
         set(value) {
-            field = value
-            binding.checkboxSalary.setImageResource(
-                if (value) R.drawable.ic_checkbox_on_24 else R.drawable.ic_checkbox_off_24
-            )
-            updateButtonsVisibility()
+            if (field != value) {
+                field = value
+                binding.checkboxSalary.setImageResource(
+                    if (value) R.drawable.ic_checkbox_on_24
+                    else R.drawable.ic_checkbox_off_24
+                )
+                updateButtonsVisibility()
+            }
         }
 
     override fun onCreateView(
