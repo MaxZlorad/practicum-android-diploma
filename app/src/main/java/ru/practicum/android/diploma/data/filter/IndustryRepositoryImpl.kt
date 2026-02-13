@@ -11,27 +11,25 @@ import ru.practicum.android.diploma.domain.models.IndustrySearchResult
 
 class IndustryRepositoryImpl(private val networkClient: NetworkClient) : IndustryRepository {
     override suspend fun getIndustries(): IndustrySearchResult {
-        return try {
-            val response = networkClient.doRequest(IndustryRequest())
-            when (response.resultCode) {
-                NetworkCodes.SERVER_ERROR_CODE -> {
-                    IndustrySearchResult(null, IndustrySearchError.Server)
+        val response = networkClient.doRequest(IndustryRequest())
+        return when (response.resultCode) {
+            NetworkCodes.SUCCESS_CODE -> {
+                val industryResponse = response as IndustryResponse
+                val data = industryResponse.industries.map {
+                    Industry(it.id, it.name)
                 }
-
-                NetworkCodes.SUCCESS_CODE -> {
-                    val industryResponse = response as IndustryResponse
-                    val data = industryResponse.industries.map {
-                        Industry(it.id, it.name)
-                    }
-                    IndustrySearchResult(data, null)
-                }
-
-                else -> {
-                    IndustrySearchResult(null, IndustrySearchError.Network)
-                }
+                IndustrySearchResult(data, null)
             }
-        } catch (_: Exception) {
-            IndustrySearchResult(null, IndustrySearchError.Network)
+
+            NetworkCodes.SERVER_ERROR_CODE ->
+                IndustrySearchResult(null, IndustrySearchError.Server)
+
+            NetworkCodes.NO_NETWORK_CODE,
+            NetworkCodes.TIMEOUT_CODE ->
+                IndustrySearchResult(null, IndustrySearchError.Network)
+
+            else ->
+                IndustrySearchResult(null, IndustrySearchError.Network)
         }
     }
 }

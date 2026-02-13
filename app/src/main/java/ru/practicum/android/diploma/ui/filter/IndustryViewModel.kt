@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import ru.practicum.android.diploma.domain.api.FilterInteractor
 import ru.practicum.android.diploma.domain.api.IndustryInteractor
@@ -23,17 +24,16 @@ class IndustryViewModel(
     private val _isButtonEnabled = MutableLiveData(false)
     val isButtonEnabled: LiveData<Boolean> = _isButtonEnabled
     private var selectedIndustryName: String? = null
+    private var loadJob: Job? = null
     fun loadIndustries() {
         _stateLiveData.value = IndustryState.Loading
-
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             allIndustries.clear()
-
             val response = industryInteractor.getIndustries()
             val data = response.data
                 ?.sortedBy { it.name.lowercase(Locale.getDefault()) }
                 ?: emptyList()
-
             allIndustries.addAll(data)
 
             val savedFilters = filterInteractor.getFilters()
@@ -42,7 +42,8 @@ class IndustryViewModel(
             selectedIndustryName = savedFilters.industryName
 
             if (savedIndustryId != null) {
-                selectedIndustryName = allIndustries.find { it.id == savedIndustryId }?.name
+                selectedIndustryName =
+                    allIndustries.find { it.id == savedIndustryId }?.name
             }
 
             if (savedIndustryId != null &&
@@ -55,14 +56,17 @@ class IndustryViewModel(
 
             when {
                 response.error != null ->
-                    _stateLiveData.postValue(IndustryState.Error(response.error))
-
+                    _stateLiveData.postValue(
+                        IndustryState.Error(response.error)
+                    )
                 data.isEmpty() ->
                     _stateLiveData.postValue(IndustryState.Empty)
-
                 else ->
-                    _stateLiveData.postValue(IndustryState.Content(data))
+                    _stateLiveData.postValue(
+                        IndustryState.Content(data)
+                    )
             }
+
             updateButtonEnabled()
         }
     }
@@ -118,5 +122,9 @@ class IndustryViewModel(
         selectedIndustryId = industryToSave
         selectedIndustryName = industryNameToSave
         updateButtonEnabled()
+    }
+    override fun onCleared() {
+        super.onCleared()
+        loadJob?.cancel()
     }
 }

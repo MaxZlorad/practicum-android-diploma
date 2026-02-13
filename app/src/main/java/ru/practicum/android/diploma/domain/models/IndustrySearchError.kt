@@ -1,6 +1,6 @@
 package ru.practicum.android.diploma.domain.models
 
-sealed class IndustrySearchError {
-    object Network : IndustrySearchError()
-    object Server : IndustrySearchError()
+sealed interface IndustrySearchError {
+    object Network : IndustrySearchError
+    object Server : IndustrySearchError
 }
