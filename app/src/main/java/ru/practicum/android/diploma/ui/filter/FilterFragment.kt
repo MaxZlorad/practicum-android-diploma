@@ -24,10 +24,14 @@ class FilterFragment : Fragment() {
         set(value) {
             if (field != value) {
                 field = value
-                binding.checkboxSalary.setImageResource(
-                    if (value) R.drawable.ic_checkbox_on_24
-                    else R.drawable.ic_checkbox_off_24
-                )
+
+                val resId = if (value) {
+                    R.drawable.ic_checkbox_on_24
+                } else {
+                    R.drawable.ic_checkbox_off_24
+                }
+
+                binding.checkboxSalary.setImageResource(resId)
                 updateButtonsVisibility()
             }
         }
